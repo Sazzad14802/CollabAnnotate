@@ -24,6 +24,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Profile (Breeze Livewire-managed Blade view)
     Route::get('/profile', fn() => view('profile'))->name('profile');
+
+    // Datasets
+    Route::resource('datasets', \App\Http\Controllers\DatasetController::class)
+        ->except(['index'])
+        ->names('datasets');
+    Route::get('/datasets', [\App\Http\Controllers\DatasetController::class, 'index'])->name('datasets.index');
 });
 
 require __DIR__.'/auth.php';

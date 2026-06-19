@@ -49,7 +49,17 @@
                 Dashboard
             </a>
             
-            {{-- Project and Dataset Links will go here in future commits --}}
+            <a href="{{ route('datasets.index') }}" wire:navigate
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                      {{ request()->routeIs('datasets.*') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                </svg>
+                Datasets
+            </a>
+            
+            {{-- Project Links will go here in future commits --}}
         </nav>
 
         {{-- User Footer --}}
@@ -87,6 +97,10 @@
                 <a href="{{ route('dashboard') }}" wire:navigate @click="sidebarOpen = false"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
                     Dashboard
+                </a>
+                <a href="{{ route('datasets.index') }}" wire:navigate @click="sidebarOpen = false"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+                    Datasets
                 </a>
             </nav>
         </aside>
