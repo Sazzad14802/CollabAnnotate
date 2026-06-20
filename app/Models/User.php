@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->hasMany(Dataset::class);
     }
 
+    public function ownedProjects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
     public function assignedRows(): HasMany
     {
         return $this->hasMany(DatasetRow::class, 'assigned_to');

@@ -30,6 +30,9 @@ Route::middleware(['auth'])->group(function () {
         ->except(['index'])
         ->names('datasets');
     Route::get('/datasets', [\App\Http\Controllers\DatasetController::class, 'index'])->name('datasets.index');
+
+    // Projects
+    Route::resource('projects', \App\Http\Controllers\ProjectController::class);
 });
 
 require __DIR__.'/auth.php';
