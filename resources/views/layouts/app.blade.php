@@ -69,7 +69,7 @@
                 Projects
             </a>
             
-            {{-- Annotators Links will go here in future commits --}}
+            {{-- Annotators Links will go here later --}}
         </nav>
 
         {{-- User Footer --}}

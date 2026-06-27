@@ -34,7 +34,7 @@ class DatasetRow extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    // Annotation relations will be added in Commit 5
+
 
     public function isCompleted(): bool
     {

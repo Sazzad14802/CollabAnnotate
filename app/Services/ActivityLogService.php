@@ -7,8 +7,8 @@ use App\Models\User;
 class ActivityLogService
 {
     /**
-     * Dummy log method for Commit 2. 
-     * Full implementation will be added in Commit 6.
+     * Dummy log method.
+     * Full implementation will be added later.
      */
     public static function log(
         User    $user,

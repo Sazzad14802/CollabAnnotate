@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -47,6 +48,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function projectUsers(): HasMany
+    {
+        return $this->hasMany(ProjectUser::class);
+    }
+
+    // Projects this user is assigned to as annotator
+    public function assignedProjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_users')
+            ->wherePivot('role', 'annotator')
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps()
+            ->withCasts(['joined_at' => 'datetime']);
     }
 
     public function datasets(): HasMany

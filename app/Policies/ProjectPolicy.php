@@ -10,7 +10,8 @@ class ProjectPolicy
     /** Owner or assigned annotator can view the project */
     public function view(User $user, Project $project): bool
     {
-        return $project->user_id === $user->id;
+        return $project->user_id === $user->id
+            || $project->members()->where('user_id', $user->id)->exists();
     }
 
     /** Only owner can update project settings */
@@ -28,7 +29,8 @@ class ProjectPolicy
     /** Owner or annotators can annotate */
     public function annotate(User $user, Project $project): bool
     {
-        return $project->user_id === $user->id;
+        return $project->user_id === $user->id
+            || $project->members()->where('user_id', $user->id)->exists();
     }
 
     /** Only owner can manage annotators */

@@ -16,12 +16,13 @@ class ProjectController extends Controller
     public function index(): View
     {
         $ownedProjects = auth()->user()->ownedProjects()
-            ->with(['dataset'])
+            ->with(['dataset', 'members'])
+            ->withCount('annotators')
             ->latest()
             ->get();
             
         foreach ($ownedProjects as $p) {
-            $p->annotators_count = 0;
+            // $p->annotators_count = 0;
         }
 
         return view('projects.index', compact('ownedProjects'));
@@ -74,11 +75,11 @@ class ProjectController extends Controller
             'chunk_size'  => $request->chunk_size ?? 50,
         ]);
 
-        // Add owner to project_users - Deferred to Commit 4
-        // $project->members()->attach($user->id, [
-        //     'role'      => 'owner',
-        //     'joined_at' => now(),
-        // ]);
+        // Add owner to project_users
+        $project->members()->attach($user->id, [
+            'role'      => 'owner',
+            'joined_at' => now(),
+        ]);
 
         ActivityLogService::log($user, 'project.created',
             "Project \"{$project->name}\" created.", $project);
@@ -96,11 +97,10 @@ class ProjectController extends Controller
     {
         $this->authorize('view', $project);
 
-        $project->load(['dataset']);
-        // Deferred to later commits
-        // $project->load(['annotationFields', 'annotators']);
+        $project->load(['dataset', 'annotators']);
+        // $project->load(['annotationFields']);
 
-        $recentActivity = collect([]); // Deferred to Commit 6
+        $recentActivity = collect([]);
         // $recentActivity = $project->activityLogs()
         //     ->with('user')
         //     ->latest()

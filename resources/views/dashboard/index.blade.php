@@ -34,6 +34,9 @@
             <livewire:dashboard.my-datasets />
         </div>
 
+        {{-- Assigned to Me (Annotator View) --}}
+        <livewire:dashboard.assigned-projects />
+
         {{-- Projects Section --}}
         <div class="mb-10">
             <div class="flex items-center justify-between mb-4">
@@ -48,7 +51,7 @@
             @php
                 $ownedProjects = auth()->user()->ownedProjects()
                     ->with(['dataset'])
-                    // ->withCount('annotators')
+                    ->withCount('annotators')
                     ->latest()
                     ->limit(6)
                     ->get();

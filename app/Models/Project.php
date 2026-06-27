@@ -35,7 +35,8 @@ class Project extends Model
         return $this->belongsTo(Dataset::class);
     }
 
-    // Relations for Commit 4 & 5 & 6 commented out for now
+
+    // Relations for Commit 5 & 6 commented out for now
     /*
     public function annotationFields(): HasMany
     {
@@ -46,6 +47,7 @@ class Project extends Model
     {
         return $this->hasMany(Annotation::class);
     }
+    */
 
     public function members(): BelongsToMany
     {
@@ -73,7 +75,6 @@ class Project extends Model
     {
         return $this->hasMany(ActivityLog::class);
     }
-    */
 
     public function isOwner(User $user): bool
     {

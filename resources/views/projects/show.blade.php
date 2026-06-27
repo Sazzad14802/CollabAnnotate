@@ -117,7 +117,7 @@
                     </div>
                 @else
                     <div class="card p-12 text-center text-gray-500">
-                        <p>Annotation Workspace will be added in Commit 5.</p>
+                        <p>Annotation Workspace functionality pending.</p>
                     </div>
                 @endif
             </div>
@@ -125,7 +125,7 @@
             {{-- Progress Tab --}}
             <div x-show="tab === 'progress'" x-cloak>
                 <div class="card p-12 text-center text-gray-500">
-                    <p>Progress Tracker will be added in Commit 5.</p>
+                    <p>Progress Tracker functionality pending.</p>
                 </div>
             </div>
 
@@ -133,15 +133,13 @@
             @can('manageSchema', $project)
                 <div x-show="tab === 'schema'" x-cloak>
                     <div class="card p-12 text-center text-gray-500">
-                        <p>Schema Builder will be added in Commit 5.</p>
+                        <p>Schema Builder functionality pending.</p>
                     </div>
                 </div>
 
                 {{-- Annotators Tab --}}
                 <div x-show="tab === 'annotators'" x-cloak>
-                    <div class="card p-12 text-center text-gray-500">
-                        <p>Annotator Manager will be added in Commit 4.</p>
-                    </div>
+                    <livewire:projects.annotator-manager :project="$project" />
                 </div>
             @endcan
 
