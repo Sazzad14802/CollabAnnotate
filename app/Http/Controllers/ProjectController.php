@@ -97,8 +97,7 @@ class ProjectController extends Controller
     {
         $this->authorize('view', $project);
 
-        $project->load(['dataset', 'annotators']);
-        // $project->load(['annotationFields']);
+        $project->load(['dataset', 'annotators', 'annotationFields']);
 
         $recentActivity = collect([]);
         // $recentActivity = $project->activityLogs()

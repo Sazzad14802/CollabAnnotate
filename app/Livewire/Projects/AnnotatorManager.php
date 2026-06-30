@@ -81,15 +81,11 @@ class AnnotatorManager extends Component
     public function render(): View
     {
         $annotators = $this->project->annotators()
-            // ->withCount([
-            //     'annotations as annotation_count' => fn($q) =>
-            //         $q->where('project_id', $this->project->id),
-            // ])
+            ->withCount([
+                'annotations as annotation_count' => fn($q) =>
+                    $q->where('project_id', $this->project->id),
+            ])
             ->get();
-            
-        foreach ($annotators as $annotator) {
-            $annotator->annotation_count = 0;
-        }
 
         return view('livewire.projects.annotator-manager', compact('annotators'));
     }

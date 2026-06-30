@@ -75,6 +75,16 @@ class User extends Authenticatable
         return $this->hasMany(Project::class);
     }
 
+    public function annotations(): HasMany
+    {
+        return $this->hasMany(Annotation::class);
+    }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
     public function assignedRows(): HasMany
     {
         return $this->hasMany(DatasetRow::class, 'assigned_to');

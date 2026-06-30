@@ -116,25 +116,19 @@
                         Dataset is still importing (status: {{ $project->dataset->import_status }}). Please wait.
                     </div>
                 @else
-                    <div class="card p-12 text-center text-gray-500">
-                        <p>Annotation Workspace functionality pending.</p>
-                    </div>
+                    <livewire:projects.annotation-workspace :project="$project" />
                 @endif
             </div>
 
             {{-- Progress Tab --}}
             <div x-show="tab === 'progress'" x-cloak>
-                <div class="card p-12 text-center text-gray-500">
-                    <p>Progress Tracker functionality pending.</p>
-                </div>
+                <livewire:projects.progress-tracker :project="$project" />
             </div>
 
             {{-- Schema Tab --}}
             @can('manageSchema', $project)
                 <div x-show="tab === 'schema'" x-cloak>
-                    <div class="card p-12 text-center text-gray-500">
-                        <p>Schema Builder functionality pending.</p>
-                    </div>
+                    <livewire:projects.schema-builder :project="$project" />
                 </div>
 
                 {{-- Annotators Tab --}}

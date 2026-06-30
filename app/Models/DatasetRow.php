@@ -40,4 +40,9 @@ class DatasetRow extends Model
     {
         return $this->status === 'completed';
     }
+
+    public function annotations(): HasMany
+    {
+        return $this->hasMany(Annotation::class);
+    }
 }

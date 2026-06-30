@@ -36,8 +36,6 @@ class Project extends Model
     }
 
 
-    // Relations for Commit 5 & 6 commented out for now
-    /*
     public function annotationFields(): HasMany
     {
         return $this->hasMany(AnnotationField::class)->orderBy('order');
@@ -47,7 +45,6 @@ class Project extends Model
     {
         return $this->hasMany(Annotation::class);
     }
-    */
 
     public function members(): BelongsToMany
     {
