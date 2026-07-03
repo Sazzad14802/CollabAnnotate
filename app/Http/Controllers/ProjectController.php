@@ -100,11 +100,11 @@ class ProjectController extends Controller
         $project->load(['dataset', 'annotators', 'annotationFields']);
 
         $recentActivity = collect([]);
-        // $recentActivity = $project->activityLogs()
-        //     ->with('user')
-        //     ->latest()
-        //     ->limit(10)
-        //     ->get();
+        $recentActivity = $project->activityLogs()
+            ->with('user')
+            ->latest()
+            ->limit(10)
+            ->get();
 
         return view('projects.show', compact('project', 'recentActivity'));
     }

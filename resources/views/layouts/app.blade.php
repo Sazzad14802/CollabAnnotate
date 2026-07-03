@@ -137,6 +137,8 @@
 
             {{-- Right side: User Menu --}}
             <div class="flex items-center gap-3">
+                <livewire:notifications.notification-bell />
+
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open"
                             class="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition-colors">

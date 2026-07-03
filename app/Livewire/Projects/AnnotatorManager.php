@@ -51,7 +51,7 @@ class AnnotatorManager extends Component
         ActivityLogService::log(auth()->user(), 'annotator.added',
             "Annotator \"{$user->name}\" added to project.", $this->project);
 
-        // $user->notify(new ProjectInvited($this->project));
+        $user->notify(new ProjectInvited($this->project));
 
         $this->searchQuery   = '';
         $this->searchResults = [];
@@ -74,7 +74,7 @@ class AnnotatorManager extends Component
         ActivityLogService::log(auth()->user(), 'annotator.removed',
             "Annotator \"{$user->name}\" removed from project.", $this->project);
 
-        // $user->notify(new ProjectRemoved($this->project));
+        $user->notify(new ProjectRemoved($this->project));
         $this->dispatch('annotator-removed');
     }
 

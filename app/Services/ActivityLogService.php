@@ -2,22 +2,25 @@
 
 namespace App\Services;
 
+use App\Models\ActivityLog;
+use App\Models\Project;
 use App\Models\User;
 
 class ActivityLogService
 {
-    /**
-     * Dummy log method.
-     * Full implementation will be added later.
-     */
     public static function log(
         User    $user,
         string  $event,
         string  $description,
-        $project = null,
+        ?Project $project = null,
         array   $properties = []
-    ) {
-        // Do nothing for now
-        return null;
+    ): ActivityLog {
+        return ActivityLog::create([
+            'user_id'    => $user->id,
+            'project_id' => $project?->id,
+            'event'      => $event,
+            'description'=> $description,
+            'properties' => $properties ?: null,
+        ]);
     }
 }
