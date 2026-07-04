@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\ImportDatasetJob;
+use App\Models\AnnotationField;
 use App\Models\Dataset;
 use App\Models\Project;
-use App\Services\ActivityLogService;
-use App\Services\DatasetImportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
 {
@@ -28,6 +27,11 @@ class ProjectController extends Controller
         return view('projects.index', compact('ownedProjects'));
     }
 
+    public function assigned(): View
+    {
+        return view('projects.assigned');
+    }
+
     public function create(): View
     {
         $datasets = auth()->user()->datasets()
@@ -38,41 +42,36 @@ class ProjectController extends Controller
         return view('projects.create', compact('datasets'));
     }
 
-    public function store(Request $request, DatasetImportService $importService): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name'              => ['required', 'string', 'max:255'],
-            'description'       => ['nullable', 'string', 'max:2000'],
-            'dataset_source'    => ['required', 'in:upload,existing'],
-            'dataset_id'        => ['required_if:dataset_source,existing', 'exists:datasets,id'],
-            'dataset_file'      => ['required_if:dataset_source,upload', 'file', 'mimes:csv,xlsx', 'max:51200'],
-            'dataset_name'      => ['required_if:dataset_source,upload', 'nullable', 'string', 'max:255'],
-            'chunk_size'        => ['nullable', 'integer', 'min:1', 'max:1000'],
-        ]);
-
         $user = auth()->user();
 
-        // Handle dataset
-        if ($request->dataset_source === 'upload') {
-            $dataset = $importService->prepareDataset(
-                $request->file('dataset_file'),
-                $request->dataset_name,
-                $user->id
-            );
+        $request->validate([
+            'name'              => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('projects')->where(fn ($query) => $query->where('user_id', $user->id))
+            ],
+            'description'       => ['nullable', 'string', 'max:2000'],
+            'dataset_id'        => ['required', 'exists:datasets,id'],
+            'chunk_size'        => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'schema'            => ['required', 'array', 'min:1'],
+            'schema.*.name'     => ['required', 'string', 'max:100'],
+            'schema.*.type'     => ['required', 'in:select,checkbox'],
+            'schema.*.options'  => ['nullable', 'string', 'required_if:schema.*.type,select'],
+            'schema.*.is_required' => ['boolean'],
+        ]);
 
-            ActivityLogService::log($user, 'dataset.uploaded',
-                "Dataset \"{$dataset->name}\" uploaded.");
-        } else {
-            $dataset = Dataset::findOrFail($request->dataset_id);
-            $this->authorize('view', $dataset);
-        }
+        $dataset = Dataset::findOrFail($request->dataset_id);
+        $this->authorize('view', $dataset);
 
         $project = Project::create([
             'user_id'     => $user->id,
             'dataset_id'  => $dataset->id,
             'name'        => $request->name,
             'description' => $request->description,
-            'chunk_size'  => $request->chunk_size ?? 50,
+            'chunk_size'  => $request->chunk_size ?? 10,
         ]);
 
         // Add owner to project_users
@@ -81,12 +80,22 @@ class ProjectController extends Controller
             'joined_at' => now(),
         ]);
 
-        ActivityLogService::log($user, 'project.created',
-            "Project \"{$project->name}\" created.", $project);
+        // Save schema fields
+        foreach ($request->schema as $index => $fieldData) {
+            $options = null;
+            if ($fieldData['type'] === 'select' && !empty($fieldData['options'])) {
+                $options = array_values(array_filter(array_map('trim', explode(',', $fieldData['options']))));
+            }
 
-        // Dispatch import job if new upload
-        if ($request->dataset_source === 'upload') {
-            ImportDatasetJob::dispatch($dataset, $user);
+            AnnotationField::create([
+                'project_id'  => $project->id,
+                'name'        => $fieldData['name'],
+                'slug'        => str($fieldData['name'])->slug()->toString(),
+                'type'        => $fieldData['type'],
+                'options'     => $options,
+                'is_required' => !empty($fieldData['is_required']),
+                'order'       => $index,
+            ]);
         }
 
         return redirect()->route('projects.show', $project)
@@ -99,14 +108,7 @@ class ProjectController extends Controller
 
         $project->load(['dataset', 'annotators', 'annotationFields']);
 
-        $recentActivity = collect([]);
-        $recentActivity = $project->activityLogs()
-            ->with('user')
-            ->latest()
-            ->limit(10)
-            ->get();
-
-        return view('projects.show', compact('project', 'recentActivity'));
+        return view('projects.show', compact('project'));
     }
 
     public function edit(Project $project): View
@@ -120,7 +122,12 @@ class ProjectController extends Controller
         $this->authorize('update', $project);
 
         $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
+            'name'        => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('projects')->where(fn ($query) => $query->where('user_id', auth()->id()))->ignore($project->id)
+            ],
             'description' => ['nullable', 'string', 'max:2000'],
             'chunk_size'  => ['nullable', 'integer', 'min:1', 'max:1000'],
             'status'      => ['nullable', 'in:active,completed,archived'],
@@ -135,9 +142,6 @@ class ProjectController extends Controller
     public function destroy(Project $project): RedirectResponse
     {
         $this->authorize('delete', $project);
-
-        ActivityLogService::log(auth()->user(), 'project.deleted',
-            "Project \"{$project->name}\" deleted.");
 
         $project->delete();
 

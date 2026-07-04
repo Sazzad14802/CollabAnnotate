@@ -6,7 +6,6 @@ use App\Models\Annotation;
 use App\Models\AnnotationField;
 use App\Models\DatasetRow;
 use App\Models\Project;
-use App\Services\ActivityLogService;
 use App\Services\ChunkAssignmentService;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -18,10 +17,6 @@ class AnnotationWorkspace extends Component
     use WithPagination;
 
     public Project $project;
-
-    // Filters
-    public string $search     = '';
-    public string $filterStatus = 'all'; // all | annotated | unannotated | mine
 
     // Annotation data keyed by [row_id][field_id]
     public array $annotations = [];
@@ -43,22 +38,22 @@ class AnnotationWorkspace extends Component
     {
         $this->authorize('annotate', $this->project);
 
-        // Assign a chunk to the current user on workspace open
-        $this->chunkService->assignChunk($this->project, auth()->user());
-
         // Pre-load existing annotations for current user into state
         $this->loadAnnotations();
     }
 
-    public function updatingSearch(): void
+    public function fetchNext(): void
     {
-        $this->resetPage();
+        $this->authorize('annotate', $this->project);
+        
+        // Assign a chunk to the current user
+        $this->chunkService->assignChunk($this->project, auth()->user());
+        
+        // Reload annotations
+        $this->loadAnnotations();
     }
 
-    public function updatingFilterStatus(): void
-    {
-        $this->resetPage();
-    }
+
 
     private function loadAnnotations(): void
     {
@@ -106,15 +101,6 @@ class AnnotationWorkspace extends Component
 
         // Flash saved indicator
         $this->savedRows[$rowId] = true;
-
-        // Log annotation submitted (debounce-style — only once per row per session would be ideal,
-        // but for simplicity log every save)
-        ActivityLogService::log(
-            user: auth()->user(),
-            event: 'annotation.submitted',
-            description: "Annotation saved for row #{$row->row_index} in project \"{$this->project->name}\".",
-            project: $this->project
-        );
     }
 
     public function getAnnotationValue(int $rowId, int $fieldId): mixed
@@ -131,20 +117,15 @@ class AnnotationWorkspace extends Component
     {
         $fields = $this->project->annotationFields()->orderBy('order')->get();
 
-        $rows = DatasetRow::where('dataset_id', $this->project->dataset_id)
-            ->where('assigned_to', auth()->id())
-            ->when($this->search, function ($q) {
-                $q->where(function ($inner) {
-                    $inner->whereRaw("JSON_SEARCH(data, 'one', ?, NULL, '$.*') IS NOT NULL",
-                        ['%' . $this->search . '%']);
-                });
+        $rows = DatasetRow::with(['rowAssignments' => function ($q) {
+                $q->where('project_id', $this->project->id)
+                  ->where('user_id', auth()->id());
+            }])
+            ->where('dataset_id', $this->project->dataset_id)
+            ->whereHas('rowAssignments', function ($query) {
+                $query->where('project_id', $this->project->id)
+                      ->where('user_id', auth()->id());
             })
-            ->when($this->filterStatus === 'annotated', fn($q) =>
-                $q->where('status', 'completed')
-            )
-            ->when($this->filterStatus === 'unannotated', fn($q) =>
-                $q->where('status', '!=', 'completed')
-            )
             ->orderBy('row_index')
             ->paginate(25);
 

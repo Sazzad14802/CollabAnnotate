@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\Dataset;
 use App\Models\User;
-use App\Services\ActivityLogService;
 use App\Services\DatasetImportService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -27,12 +26,6 @@ class ImportDatasetJob implements ShouldQueue
     {
         $service->importRows($this->dataset);
 
-        ActivityLogService::log(
-            user: $this->user,
-            event: 'dataset.imported',
-            description: "Dataset \"{$this->dataset->name}\" imported successfully ({$this->dataset->row_count} rows).",
-            properties: ['dataset_id' => $this->dataset->id]
-        );
     }
 
     public function failed(\Throwable $e): void

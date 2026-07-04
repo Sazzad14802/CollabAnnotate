@@ -15,8 +15,6 @@ class DatasetRow extends Model
         'dataset_id',
         'row_index',
         'data',
-        'assigned_to',
-        'status',
     ];
 
     protected $casts = [
@@ -29,16 +27,9 @@ class DatasetRow extends Model
         return $this->belongsTo(Dataset::class);
     }
 
-    public function assignedUser(): BelongsTo
+    public function rowAssignments(): HasMany
     {
-        return $this->belongsTo(User::class, 'assigned_to');
-    }
-
-
-
-    public function isCompleted(): bool
-    {
-        return $this->status === 'completed';
+        return $this->hasMany(RowAssignment::class);
     }
 
     public function annotations(): HasMany

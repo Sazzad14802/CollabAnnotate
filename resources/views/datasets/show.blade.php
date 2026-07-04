@@ -1,89 +1,103 @@
 <x-app-layout>
-    <x-slot name="pageTitle">{{ $dataset->name }}</x-slot>
+    <x-slot name="header">
+        <h2 class="h5 mb-0 fw-semibold">{{ $dataset->name }}</h2>
+    </x-slot>
 
-    <div class="page-section max-w-7xl mx-auto">
-        <div class="flex items-center gap-3 mb-6">
-            <a href="{{ route('datasets.index') }}" wire:navigate
-               class="text-gray-400 hover:text-gray-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="container-fluid py-4 px-4">
+
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <a href="{{ route('datasets.index') }}" wire:navigate class="text-muted">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
             </a>
-            <h2 class="text-xl font-bold text-gray-900">{{ $dataset->name }}</h2>
+            <h4 class="fw-bold mb-0">{{ $dataset->name }}</h4>
             @if($dataset->import_status === 'completed')
-                <span class="badge-green">Imported</span>
+                <span class="badge badge-green rounded-pill">Imported</span>
             @elseif($dataset->import_status === 'processing')
-                <span class="badge-yellow">Processing...</span>
+                <span class="badge badge-yellow rounded-pill">Processing...</span>
             @else
-                <span class="badge-red">{{ ucfirst($dataset->import_status) }}</span>
+                <span class="badge badge-red rounded-pill">{{ ucfirst($dataset->import_status) }}</span>
             @endif
         </div>
 
-        {{-- Dataset Info Cards --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div class="stat-card text-center">
-                <p class="text-3xl font-bold text-gray-900">{{ number_format($dataset->row_count) }}</p>
-                <p class="text-sm text-gray-500 mt-1">Total Rows</p>
+        {{-- Stat Cards --}}
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-sm-3">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <h3 class="fw-bold mb-0">{{ number_format($dataset->row_count) }}</h3>
+                        <small class="text-muted">Total Rows</small>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card text-center">
-                <p class="text-3xl font-bold text-indigo-600">{{ count($dataset->column_names) }}</p>
-                <p class="text-sm text-gray-500 mt-1">Columns</p>
+            <div class="col-6 col-sm-3">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <h3 class="fw-bold mb-0 text-primary">{{ count($dataset->column_names) }}</h3>
+                        <small class="text-muted">Columns</small>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card text-center">
-                <p class="text-3xl font-bold text-gray-900">{{ $dataset->projects->count() }}</p>
-                <p class="text-sm text-gray-500 mt-1">Projects</p>
+            <div class="col-6 col-sm-3">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <h3 class="fw-bold mb-0">{{ $dataset->projects->count() }}</h3>
+                        <small class="text-muted">Projects</small>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card text-center">
-                <p class="text-sm font-medium text-gray-900">{{ $dataset->created_at->format('M d, Y') }}</p>
-                <p class="text-sm text-gray-500 mt-1">Uploaded</p>
-            </div>
-        </div>
-
-        {{-- Columns --}}
-        <div class="card mb-6">
-            <div class="card-header">
-                <h3 class="font-semibold text-gray-900">Columns</h3>
-            </div>
-            <div class="card-body">
-                <div class="flex flex-wrap gap-2">
-                    @foreach($dataset->column_names as $col)
-                        <span class="badge-gray">{{ $col }}</span>
-                    @endforeach
+            <div class="col-6 col-sm-3">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <p class="fw-semibold mb-0">{{ $dataset->created_at->format('M d, Y') }}</p>
+                        <small class="text-muted">Uploaded</small>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {{-- Data Preview --}}
-        <div class="card overflow-x-auto">
-            <div class="card-header">
-                <h3 class="font-semibold text-gray-900">Data Preview</h3>
-                <p class="text-sm text-gray-500 mt-1">Showing {{ $rows->count() }} of {{ $dataset->row_count }} rows</p>
+        {{-- Columns --}}
+        <div class="card mb-4">
+            <div class="card-header fw-semibold">Columns</div>
+            <div class="card-body d-flex flex-wrap gap-2">
+                @foreach($dataset->column_names as $col)
+                    <span class="badge badge-gray">{{ $col }}</span>
+                @endforeach
             </div>
-            <table class="data-table min-w-full">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        @foreach($dataset->column_names as $col)
-                            <th>{{ $col }}</th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($rows as $row)
-                        <tr wire:key="drow-{{ $row->id }}">
-                            <td class="text-gray-400 text-xs font-mono">{{ $row->row_index + 1 }}</td>
+        </div>
+
+        {{-- Data Preview --}}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Data Preview</span>
+                <small class="text-muted">Showing {{ $rows->count() }} of {{ $dataset->row_count }} rows</small>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
                             @foreach($dataset->column_names as $col)
-                                <td>
-                                    <div class="max-w-xs truncate" title="{{ $row->data[$col] ?? '' }}">
-                                        {{ $row->data[$col] ?? '—' }}
-                                    </div>
-                                </td>
+                                <th>{{ $col }}</th>
                             @endforeach
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <div class="px-6 py-4">
+                    </thead>
+                    <tbody>
+                        @foreach($rows as $row)
+                            <tr wire:key="drow-{{ $row->id }}">
+                                <td class="text-muted small font-monospace">{{ $row->row_index + 1 }}</td>
+                                @foreach($dataset->column_names as $col)
+                                    <td>
+                                        {{ $row->data[$col] ?? '—' }}
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
                 {{ $rows->links() }}
             </div>
         </div>

@@ -1,11 +1,12 @@
 <x-app-layout>
-    <x-slot name="pageTitle">Create Project</x-slot>
+    <x-slot name="header">
+        <h2 class="h5 mb-0 fw-semibold">Create Project</h2>
+    </x-slot>
 
-    <div class="page-section max-w-3xl mx-auto">
-        <div class="mb-6">
-            <a href="{{ route('projects.index') }}" wire:navigate
-               class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="container py-4" style="max-width:700px;">
+        <div class="mb-3">
+            <a href="{{ route('projects.index') }}" wire:navigate class="text-muted small d-inline-flex align-items-center gap-1">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
                 Back to Projects
@@ -14,110 +15,128 @@
 
         <div class="card">
             <div class="card-header">
-                <h2 class="text-lg font-semibold text-gray-900">Create Annotation Project</h2>
-                <p class="text-sm text-gray-500 mt-1">Set up a new project with a dataset to start annotating.</p>
+                <h5 class="fw-semibold mb-0">Create Annotation Project</h5>
+                <p class="text-muted small mb-0">Set up a new project with a dataset to start annotating.</p>
             </div>
 
             <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="card-body space-y-6">
+                <div class="card-body">
+
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0 ps-3">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     {{-- Project Name --}}
-                    <div>
-                        <label for="proj-name" class="form-label">Project Name <span class="text-red-500">*</span></label>
+                    <div class="mb-3">
+                        <label for="proj-name" class="form-label">Project Name <span class="text-danger">*</span></label>
                         <input type="text" id="proj-name" name="name" value="{{ old('name') }}"
-                               class="form-input" placeholder="e.g. Sentiment Analysis 2024" required>
-                        @error('name') <p class="form-error">{{ $message }}</p> @enderror
+                               class="form-control @error('name') is-invalid @enderror"
+                               placeholder="e.g. Sentiment Analysis 2024" required>
+                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     {{-- Description --}}
-                    <div>
+                    <div class="mb-3">
                         <label for="proj-desc" class="form-label">Description</label>
                         <textarea id="proj-desc" name="description" rows="3"
-                                  class="form-input" placeholder="Describe the goal of this annotation project...">{{ old('description') }}</textarea>
-                        @error('description') <p class="form-error">{{ $message }}</p> @enderror
+                                  class="form-control @error('description') is-invalid @enderror"
+                                  placeholder="Describe the goal of this annotation project...">{{ old('description') }}</textarea>
+                        @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     {{-- Dataset Source --}}
-                    <div x-data="{ source: '{{ old('dataset_source', 'upload') }}' }">
-                        <label class="form-label">Dataset <span class="text-red-500">*</span></label>
+                    <div class="mb-3">
+                        <label for="dataset-id" class="form-label">Dataset <span class="text-danger">*</span></label>
+                        <select id="dataset-id" name="dataset_id" class="form-select" required>
+                            <option value="">-- Choose a dataset --</option>
+                            @foreach($datasets as $dataset)
+                                <option value="{{ $dataset->id }}" {{ old('dataset_id') == $dataset->id ? 'selected' : '' }}>
+                                    {{ $dataset->name }} ({{ number_format($dataset->row_count) }} rows)
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="form-text">You must select an existing, fully imported dataset.</div>
+                        @error('dataset_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                    </div>
 
-                        <div class="flex gap-4 mb-4">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="dataset_source" value="upload"
-                                       x-model="source" class="text-indigo-600">
-                                <span class="text-sm font-medium text-gray-700">Upload new file</span>
-                            </label>
-                            @if($datasets->isNotEmpty())
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="dataset_source" value="existing"
-                                           x-model="source" class="text-indigo-600">
-                                    <span class="text-sm font-medium text-gray-700">Use existing dataset</span>
-                                </label>
-                            @endif
-                        </div>
+                    {{-- Annotation Schema --}}
+                    <div class="mb-4 pt-3 border-top" x-data="{
+                        fields: [
+                            { name: 'Sentiment', type: 'select', options: 'Positive, Negative, Neutral', is_required: true }
+                        ],
+                        addField() {
+                            this.fields.push({ name: '', type: 'select', options: '', is_required: false });
+                        },
+                        removeField(index) {
+                            this.fields.splice(index, 1);
+                        }
+                    }">
+                        <h6 class="fw-semibold mb-1">Annotation Schema <span class="text-danger">*</span></h6>
+                        <p class="text-muted small mb-3">Define the fields annotators will fill out. <strong class="text-danger">This cannot be changed later.</strong></p>
 
-                        {{-- Upload new --}}
-                        <div x-show="source === 'upload'" class="space-y-4">
-                            <div>
-                                <label for="dataset-name" class="form-label">Dataset Name</label>
-                                <input type="text" id="dataset-name" name="dataset_name"
-                                       value="{{ old('dataset_name') }}" class="form-input"
-                                       placeholder="My Training Dataset">
-                                @error('dataset_name') <p class="form-error">{{ $message }}</p> @enderror
-                            </div>
-                            <div>
-                                <label for="dataset-file" class="form-label">CSV or XLSX File</label>
-                                <div class="mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-gray-200 border-dashed rounded-xl hover:border-indigo-400 transition-colors">
-                                    <div class="text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                                        </svg>
-                                        <div class="mt-3">
-                                            <label for="dataset-file" class="cursor-pointer">
-                                                <span class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">Choose file</span>
-                                                <span class="text-gray-500 text-sm"> or drag and drop</span>
-                                            </label>
-                                            <input id="dataset-file" name="dataset_file" type="file"
-                                                   accept=".csv,.xlsx" class="sr-only">
+                        <div class="d-flex flex-column gap-3 mb-3">
+                            <template x-for="(field, index) in fields" :key="index">
+                                <div class="card bg-light border-0 shadow-sm">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-medium small" x-text="'Field ' + (index + 1)"></span>
+                                            <button type="button" class="btn btn-sm text-danger p-0" @click="removeField(index)" x-show="fields.length > 1">
+                                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
                                         </div>
-                                        <p class="text-xs text-gray-400 mt-1">CSV or XLSX up to 50MB</p>
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <input type="text" x-model="field.name" :name="'schema['+index+'][name]'" class="form-control form-control-sm" placeholder="Field Name (e.g. Sentiment)" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select x-model="field.type" :name="'schema['+index+'][type]'" class="form-select form-select-sm" required>
+                                                    <option value="select">Dropdown (Select)</option>
+                                                    <option value="checkbox">Checkbox (Yes/No)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <input type="text" x-model="field.options" :name="'schema['+index+'][options]'" x-show="field.type === 'select'" class="form-control form-control-sm" placeholder="Comma separated options" :required="field.type === 'select'">
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 form-check">
+                                            <input type="hidden" :name="'schema['+index+'][is_required]'" value="0">
+                                            <input class="form-check-input" type="checkbox" value="1" x-model="field.is_required" :name="'schema['+index+'][is_required]'" :id="'req-'+index">
+                                            <label class="form-check-label small" :for="'req-'+index">Required field</label>
+                                        </div>
                                     </div>
                                 </div>
-                                @error('dataset_file') <p class="form-error">{{ $message }}</p> @enderror
-                            </div>
+                            </template>
                         </div>
 
-                        {{-- Existing dataset --}}
-                        <div x-show="source === 'existing'" x-cloak>
-                            <label for="dataset-id" class="form-label">Select Dataset</label>
-                            <select id="dataset-id" name="dataset_id" class="form-select">
-                                <option value="">-- Choose a dataset --</option>
-                                @foreach($datasets as $dataset)
-                                    <option value="{{ $dataset->id }}" {{ old('dataset_id') == $dataset->id ? 'selected' : '' }}>
-                                        {{ $dataset->name }} ({{ number_format($dataset->row_count) }} rows)
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('dataset_id') <p class="form-error">{{ $message }}</p> @enderror
-                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" @click="addField">
+                            + Add Field
+                        </button>
+                        
+                        @error('schema') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                        @error('schema.*') <div class="text-danger small mt-1">Invalid schema definition.</div> @enderror
                     </div>
 
                     {{-- Chunk Size --}}
-                    <div>
+                    <div class="mb-3">
                         <label for="chunk-size" class="form-label">Chunk Size</label>
                         <input type="number" id="chunk-size" name="chunk_size"
-                               value="{{ old('chunk_size', 50) }}" min="1" max="1000"
-                               class="form-input w-32">
-                        <p class="text-xs text-gray-500 mt-1">Number of rows assigned to each annotator per batch.</p>
-                        @error('chunk_size') <p class="form-error">{{ $message }}</p> @enderror
+                               value="{{ old('chunk_size', 10) }}" min="1" max="1000"
+                               class="form-control" style="width:120px;">
+                        <div class="form-text">Number of rows assigned to each annotator per batch.</div>
+                        @error('chunk_size') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                     </div>
                 </div>
 
-                <div class="modal-footer">
-                    <a href="{{ route('projects.index') }}" wire:navigate class="btn-secondary">Cancel</a>
-                    <button type="submit" class="btn-primary">Create Project</button>
+                <div class="card-footer d-flex justify-content-end gap-2">
+                    <a href="{{ route('projects.index') }}" wire:navigate class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
                 </div>
             </form>
         </div>

@@ -4,9 +4,7 @@ namespace App\Livewire\Projects;
 
 use App\Models\Project;
 use App\Models\User;
-use App\Notifications\ProjectInvited;
-use App\Notifications\ProjectRemoved;
-use App\Services\ActivityLogService;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Illuminate\Contracts\View\View;
 
@@ -44,14 +42,11 @@ class AnnotatorManager extends Component
 
         $user = User::findOrFail($userId);
 
-        $this->project->members()->syncWithoutDetaching([
-            $user->id => ['role' => 'annotator', 'joined_at' => now()],
+        // Add to project
+        $this->project->members()->attach($user->id, [
+            'role' => 'annotator',
+            'joined_at' => now(),
         ]);
-
-        ActivityLogService::log(auth()->user(), 'annotator.added',
-            "Annotator \"{$user->name}\" added to project.", $this->project);
-
-        $user->notify(new ProjectInvited($this->project));
 
         $this->searchQuery   = '';
         $this->searchResults = [];
@@ -70,11 +65,6 @@ class AnnotatorManager extends Component
         }
 
         $this->project->members()->detach($userId);
-
-        ActivityLogService::log(auth()->user(), 'annotator.removed',
-            "Annotator \"{$user->name}\" removed from project.", $this->project);
-
-        $user->notify(new ProjectRemoved($this->project));
         $this->dispatch('annotator-removed');
     }
 

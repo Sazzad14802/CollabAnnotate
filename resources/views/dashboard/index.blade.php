@@ -1,118 +1,56 @@
 <x-app-layout>
-    <x-slot name="pageTitle">Dashboard</x-slot>
+    <x-slot name="header">
+        <h2 class="h5 mb-0 fw-semibold">Dashboard</h2>
+    </x-slot>
 
-    <div class="page-section max-w-7xl mx-auto">
+    <div class="container-fluid py-4 px-4">
+
         {{-- Welcome Banner --}}
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-900">Welcome back, {{ auth()->user()->name ?? 'User' }} 👋</h2>
-            <p class="text-gray-500 mt-1">Here's an overview of your annotation workspace.</p>
+        <div class="mb-4">
+            <h4 class="fw-bold mb-1">Welcome back, {{ auth()->user()->name ?? 'User' }}</h4>
+            <p class="text-muted mb-0">Here's a quick summary of your projects.</p>
         </div>
 
-        {{-- Flash Messages --}}
-        @if(session('success'))
-            <div class="alert-success mb-6">
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                {{ session('success') }}
-            </div>
-        @endif
+        @php
+            $myProjectsCount = auth()->user()->ownedProjects()->count();
+            $assignedProjectsCount = auth()->user()->assignedProjects()->count();
+        @endphp
 
-        {{-- My Datasets --}}
-        <div class="mb-10">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">My Datasets</h3>
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('datasets.create') }}" wire:navigate class="btn-primary btn-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Upload Dataset
-                    </a>
-                </div>
-            </div>
-            <livewire:dashboard.my-datasets />
-        </div>
-
-        {{-- Assigned to Me (Annotator View) --}}
-        <livewire:dashboard.assigned-projects />
-
-        {{-- Projects Section --}}
-        <div class="mb-10">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">My Projects</h3>
-                <a href="{{ route('projects.create') }}" wire:navigate class="btn-primary btn-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    New Project
-                </a>
-            </div>
-            @php
-                $ownedProjects = auth()->user()->ownedProjects()
-                    ->with(['dataset'])
-                    ->withCount('annotators')
-                    ->latest()
-                    ->limit(6)
-                    ->get();
-            @endphp
-
-            @if($ownedProjects->isEmpty())
-                <div class="card">
-                    <div class="empty-state py-12">
-                        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                        <h4 class="text-gray-700 font-medium">No projects yet</h4>
-                        <p class="text-gray-500 text-sm mt-1">Create your first annotation project to get started.</p>
-                        <a href="{{ route('projects.create') }}" wire:navigate class="btn-primary mt-4">Create Project</a>
+        <div class="row g-4">
+            {{-- My Projects Card --}}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-4 text-primary">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-muted fw-semibold mb-1 text-uppercase" style="letter-spacing: 0.5px; font-size: 0.75rem;">My Projects</p>
+                            <h3 class="fw-bold mb-0 text-dark">{{ $myProjectsCount }}</h3>
+                        </div>
                     </div>
                 </div>
-            @else
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach($ownedProjects as $project)
-                        @php
-                            $total     = $project->dataset->row_count;
-                            $completed = $project->dataset->rows()->where('status', 'completed')->count();
-                            $percent   = $total > 0 ? round(($completed / $total) * 100) : 0;
-                        @endphp
-                        <div class="card hover:shadow-md transition-shadow">
-                            <div class="card-body">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-900">{{ $project->name }}</h4>
-                                        <p class="text-xs text-gray-500 mt-0.5">{{ $project->dataset->name }}</p>
-                                    </div>
-                                    <span class="badge-{{ $project->status === 'active' ? 'green' : 'gray' }}">
-                                        {{ ucfirst($project->status) }}
-                                    </span>
-                                </div>
+            </div>
 
-                                <div class="mb-3">
-                                    <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                        <span>Progress</span>
-                                        <span>{{ $completed }} / {{ $total }}</span>
-                                    </div>
-                                    <div class="progress-bar h-2">
-                                        <div class="progress-fill h-2" style="width: {{ $percent }}%"></div>
-                                    </div>
-                                    <p class="text-xs text-gray-500 mt-1">{{ $percent }}% complete</p>
-                                </div>
-
-                                <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
-                                    <span>0 annotator(s)</span>
-                                    <span>{{ $project->created_at->format('M d, Y') }}</span>
-                                </div>
-
-                                <div class="flex gap-2">
-                                    <a href="{{ route('projects.show', $project) }}" wire:navigate
-                                       class="btn-primary btn-sm flex-1 justify-center">Open</a>
-                                </div>
-                            </div>
+            {{-- Assigned Projects Card --}}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 rounded-3 p-3 me-4 text-info">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
                         </div>
-                    @endforeach
+                        <div>
+                            <p class="text-muted fw-semibold mb-1 text-uppercase" style="letter-spacing: 0.5px; font-size: 0.75rem;">Assigned to me</p>
+                            <h3 class="fw-bold mb-0 text-dark">{{ $assignedProjectsCount }}</h3>
+                        </div>
+                    </div>
                 </div>
-            @endif
+            </div>
         </div>
+
+    </div>
 </x-app-layout>
