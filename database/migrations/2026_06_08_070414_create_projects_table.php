@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'completed', 'archived'])->default('active');
-            $table->unsignedInteger('chunk_size')->default(50);
+            $table->unsignedInteger('chunk_size')->default(10);
             $table->timestamps();
         });
     }

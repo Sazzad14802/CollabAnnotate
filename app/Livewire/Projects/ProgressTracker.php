@@ -17,7 +17,7 @@ class ProgressTracker extends Component
 
         $dataset   = $this->project->dataset;
         $total     = $dataset->row_count;
-        $completed = $dataset->rows()->where('status', 'completed')->count();
+        $completed = $this->project->rowAssignments()->where('status', 'completed')->count();
         $remaining = $total - $completed;
         $percent   = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
 
@@ -34,8 +34,8 @@ class ProgressTracker extends Component
                     ->latest('updated_at')
                     ->value('updated_at');
 
-                $assignedCount = $this->project->dataset->rows()
-                    ->where('assigned_to', $annotator->id)
+                $assignedCount = $this->project->rowAssignments()
+                    ->where('user_id', $annotator->id)
                     ->count();
 
                 return [

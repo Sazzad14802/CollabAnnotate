@@ -59,7 +59,6 @@ class DatasetImportService
                         'dataset_id' => $dataset->id,
                         'row_index'  => $index,
                         'data'       => json_encode($rowData),
-                        'status'     => 'unassigned',
                         'created_at' => $now,
                         'updated_at' => $now,
                     ];

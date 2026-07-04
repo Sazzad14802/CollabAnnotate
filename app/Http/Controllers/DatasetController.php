@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ImportDatasetJob;
 use App\Models\Dataset;
-use App\Services\ActivityLogService;
 use App\Services\DatasetImportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class DatasetController extends Controller
 {
@@ -28,15 +28,19 @@ class DatasetController extends Controller
 
     public function store(Request $request, DatasetImportService $importService): RedirectResponse
     {
+        $user = auth()->user();
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'file' => ['required', 'file', 'mimes:csv,xlsx', 'max:51200'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('datasets')->where(fn ($query) => $query->where('user_id', $user->id))
+            ],
+            'file' => ['required', 'file', 'extensions:csv,xlsx', 'max:51200'],
         ]);
 
-        $user    = auth()->user();
         $dataset = $importService->prepareDataset($request->file('file'), $request->name, $user->id);
-
-        ActivityLogService::log($user, 'dataset.uploaded', "Dataset \"{$dataset->name}\" uploaded.");
 
         ImportDatasetJob::dispatch($dataset, $user);
 
@@ -58,9 +62,6 @@ class DatasetController extends Controller
     {
         $this->authorize('delete', $dataset);
 
-        ActivityLogService::log(auth()->user(), 'dataset.deleted',
-            "Dataset \"{$dataset->name}\" deleted.");
-
         $dataset->delete();
 
         return redirect()->route('datasets.index')->with('success', 'Dataset deleted.');
@@ -77,9 +78,16 @@ class DatasetController extends Controller
     {
         $this->authorize('update', $dataset);
 
-        $request->validate(['name' => ['required', 'string', 'max:255']]);
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('datasets')->where(fn ($query) => $query->where('user_id', auth()->id()))->ignore($dataset->id)
+            ]
+        ]);
         $dataset->update(['name' => $request->name]);
 
-        return back()->with('success', 'Dataset updated.');
+        return redirect()->route('datasets.index')->with('success', 'Dataset renamed.');
     }
 }

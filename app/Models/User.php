@@ -22,7 +22,6 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username',
         'email',
         'password',
     ];
@@ -80,13 +79,8 @@ class User extends Authenticatable
         return $this->hasMany(Annotation::class);
     }
 
-    public function activityLogs(): HasMany
+    public function rowAssignments(): HasMany
     {
-        return $this->hasMany(ActivityLog::class);
-    }
-
-    public function assignedRows(): HasMany
-    {
-        return $this->hasMany(DatasetRow::class, 'assigned_to');
+        return $this->hasMany(RowAssignment::class, 'user_id');
     }
 }

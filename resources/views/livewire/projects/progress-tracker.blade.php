@@ -1,83 +1,104 @@
-<div class="space-y-6">
+<div>
     {{-- Overall Stats --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="stat-card text-center">
-            <p class="text-3xl font-bold text-gray-900">{{ number_format($total) }}</p>
-            <p class="text-sm text-gray-500 mt-1">Total Rows</p>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-4">
+                    <h3 class="fw-bold mb-0">{{ number_format($total) }}</h3>
+                    <small class="text-muted">Total Rows</small>
+                </div>
+            </div>
         </div>
-        <div class="stat-card text-center">
-            <p class="text-3xl font-bold text-green-600">{{ number_format($completed) }}</p>
-            <p class="text-sm text-gray-500 mt-1">Completed</p>
+        <div class="col-6 col-sm-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-4">
+                    <h3 class="fw-bold mb-0 text-success">{{ number_format($completed) }}</h3>
+                    <small class="text-muted">Completed</small>
+                </div>
+            </div>
         </div>
-        <div class="stat-card text-center">
-            <p class="text-3xl font-bold text-amber-500">{{ number_format($remaining) }}</p>
-            <p class="text-sm text-gray-500 mt-1">Remaining</p>
+        <div class="col-6 col-sm-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-4">
+                    <h3 class="fw-bold mb-0 text-warning">{{ number_format($remaining) }}</h3>
+                    <small class="text-muted">Remaining</small>
+                </div>
+            </div>
         </div>
-        <div class="stat-card text-center">
-            <p class="text-3xl font-bold text-indigo-600">{{ $percent }}%</p>
-            <p class="text-sm text-gray-500 mt-1">Progress</p>
+        <div class="col-6 col-sm-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-4">
+                    <h3 class="fw-bold mb-0 text-primary">{{ $percent }}%</h3>
+                    <small class="text-muted">Progress</small>
+                </div>
+            </div>
         </div>
     </div>
 
     {{-- Progress Bar --}}
-    <div class="card card-body">
-        <div class="flex justify-between text-sm font-medium text-gray-700 mb-2">
-            <span>Overall Progress</span>
-            <span>{{ $completed }} / {{ $total }}</span>
-        </div>
-        <div class="progress-bar h-4 rounded-full">
-            <div class="progress-fill h-4 rounded-full" style="width: {{ $percent }}%"></div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between small fw-medium mb-2">
+                <span>Overall Progress</span>
+                <span>{{ $completed }} / {{ $total }}</span>
+            </div>
+            <div class="progress" style="height:16px;">
+                <div class="progress-bar progress-bar-indigo fw-medium" style="width:{{ $percent }}%">
+                    {{ $percent > 10 ? $percent . '%' : '' }}
+                </div>
+            </div>
         </div>
     </div>
 
     {{-- Annotator Stats Table --}}
     <div class="card">
-        <div class="card-header">
-            <h3 class="font-semibold text-gray-900">Annotator Statistics</h3>
-        </div>
+        <div class="card-header fw-semibold">Annotator Statistics</div>
         @if($annotatorStats->isEmpty())
-            <div class="empty-state py-10">
-                <p class="text-gray-500 text-sm">No annotators assigned to this project.</p>
+            <div class="card-body text-center py-4">
+                <p class="text-muted mb-0">No annotators assigned to this project.</p>
             </div>
         @else
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Annotator</th>
-                        <th>Assigned Rows</th>
-                        <th>Annotated Rows</th>
-                        <th>Progress</th>
-                        <th>Last Activity</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($annotatorStats as $stat)
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-xs">
-                                        {{ substr($stat['name'], 0, 1) }}
-                                    </div>
-                                    <span class="font-medium text-gray-900">{{ $stat['name'] }}</span>
-                                </div>
-                            </td>
-                            <td>{{ number_format($stat['assigned']) }}</td>
-                            <td>{{ number_format($stat['annotated']) }}</td>
-                            <td>
-                                <div class="flex items-center gap-2">
-                                    <div class="progress-bar h-2 w-24">
-                                        <div class="progress-fill h-2" style="width: {{ $stat['percent'] }}%"></div>
-                                    </div>
-                                    <span class="text-xs text-gray-600 w-10">{{ $stat['percent'] }}%</span>
-                                </div>
-                            </td>
-                            <td class="text-gray-500 text-sm">
-                                {{ $stat['last_activity'] ? \Carbon\Carbon::parse($stat['last_activity'])->diffForHumans() : 'No activity' }}
-                            </td>
+                            <th>Annotator</th>
+                            <th>Assigned Rows</th>
+                            <th>Annotated Rows</th>
+                            <th>Progress</th>
+                            <th>Last Activity</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach($annotatorStats as $stat)
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary fw-semibold"
+                                             style="width:28px;height:28px;font-size:12px;">
+                                            {{ substr($stat['name'], 0, 1) }}
+                                        </div>
+                                        <span class="fw-medium">{{ $stat['name'] }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ number_format($stat['assigned']) }}</td>
+                                <td>{{ number_format($stat['annotated']) }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-fill" style="height:6px;">
+                                            <div class="progress-bar progress-bar-indigo" style="width:{{ $stat['percent'] }}%"></div>
+                                        </div>
+                                        <small class="text-muted" style="width:35px;">{{ $stat['percent'] }}%</small>
+                                    </div>
+                                </td>
+                                <td class="text-muted small">
+                                    {{ $stat['last_activity'] ? \Carbon\Carbon::parse($stat['last_activity'])->diffForHumans() : 'No activity' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 </div>

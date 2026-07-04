@@ -1,89 +1,83 @@
-<div class="grid lg:grid-cols-3 gap-6">
+<div class="row g-4">
     {{-- Search & Add --}}
-    <div class="lg:col-span-1">
-        <div class="card sticky top-24">
-            <div class="card-header">
-                <h3 class="font-semibold text-gray-900">Add Annotator</h3>
-            </div>
+    <div class="col-12 col-lg-4">
+        <div class="card sticky-top" style="top:80px;">
+            <div class="card-header fw-semibold">Add Annotator</div>
             <div class="card-body">
-                <div class="relative">
+                <div class="position-relative">
                     <input wire:model.live.debounce.300ms="searchQuery"
                            type="text"
                            placeholder="Search by name or email..."
-                           class="form-input"
+                           class="form-control"
                            id="annotator-search-input"
                            autocomplete="off">
                     <div wire:loading wire:target="updatedSearchQuery"
-                         class="absolute right-3 top-2.5">
-                        <svg class="animate-spin w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                        </svg>
+                         class="position-absolute top-50 end-0 translate-middle-y pe-3">
+                        <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                            <span class="visually-hidden">Searching...</span>
+                        </div>
                     </div>
                 </div>
 
                 @if(!empty($searchResults))
-                    <div class="mt-2 border border-gray-200 rounded-xl overflow-hidden">
+                    <ul class="list-group mt-2">
                         @foreach($searchResults as $user)
-                            <div class="flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $user['name'] }}</p>
-                                    <p class="text-xs text-gray-500 truncate">{{ $user['email'] }}</p>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                <div style="min-width:0;" class="flex-fill me-2">
+                                    <div class="fw-medium small text-truncate">{{ $user['name'] }}</div>
+                                    <div class="text-muted small text-truncate">{{ $user['email'] }}</div>
                                 </div>
                                 <button wire:click="addAnnotator({{ $user['id'] }})"
-                                        class="ml-2 btn-primary btn-sm shrink-0">Add</button>
-                            </div>
+                                        class="btn btn-primary btn-sm flex-shrink-0">Add</button>
+                            </li>
                         @endforeach
-                    </div>
+                    </ul>
                 @elseif(strlen($searchQuery) >= 2)
-                    <p class="text-sm text-gray-500 mt-3 text-center">No users found.</p>
+                    <p class="text-muted small mt-3 text-center mb-0">No users found.</p>
                 @endif
             </div>
         </div>
     </div>
 
     {{-- Current Annotators --}}
-    <div class="lg:col-span-2">
+    <div class="col-12 col-lg-8">
         <div class="card">
-            <div class="card-header">
-                <h3 class="font-semibold text-gray-900">Current Annotators</h3>
-                <p class="text-sm text-gray-500 mt-1">{{ $annotators->count() }} annotator(s)</p>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Current Annotators</span>
+                <small class="text-muted">{{ $annotators->count() }} annotator(s)</small>
             </div>
 
             @if($annotators->isEmpty())
-                <div class="empty-state py-12">
-                    <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="card-body text-center py-5">
+                    <svg class="mb-3 text-muted" width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                               d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                    <p class="text-gray-500 text-sm">No annotators assigned yet.</p>
+                    <p class="text-muted mb-0">No annotators assigned yet.</p>
                 </div>
             @else
-                <div class="divide-y divide-gray-100">
+                <ul class="list-group list-group-flush">
                     @foreach($annotators as $annotator)
-                        <div wire:key="annotator-{{ $annotator->id }}" class="px-6 py-4 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-sm">
+                        <li wire:key="annotator-{{ $annotator->id }}" class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 fw-semibold text-primary"
+                                     style="width:36px;height:36px;font-size:14px;">
                                     {{ substr($annotator->name, 0, 1) }}
                                 </div>
                                 <div>
-                                    <p class="font-medium text-gray-900">{{ $annotator->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $annotator->email }}</p>
+                                    <div class="fw-medium">{{ $annotator->name }}</div>
+                                    <small class="text-muted">{{ $annotator->email }}</small>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-sm text-gray-500">
-                                    {{ number_format($annotator->annotation_count) }} annotations
-                                </span>
+                            <div class="d-flex align-items-center gap-3">
+                                <small class="text-muted">{{ number_format($annotator->annotation_count) }} annotations</small>
                                 <button wire:click="removeAnnotator({{ $annotator->id }})"
                                         wire:confirm="Remove {{ $annotator->name }} from this project?"
-                                        class="btn-sm text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 rounded-lg transition-colors">
-                                    Remove
-                                </button>
+                                        class="btn btn-sm btn-outline-danger">Remove</button>
                             </div>
-                        </div>
+                        </li>
                     @endforeach
-                </div>
+                </ul>
             @endif
         </div>
     </div>

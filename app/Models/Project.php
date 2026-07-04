@@ -68,11 +68,6 @@ class Project extends Model
         return $this->hasMany(ProjectUser::class);
     }
 
-    public function activityLogs(): HasMany
-    {
-        return $this->hasMany(ActivityLog::class);
-    }
-
     public function isOwner(User $user): bool
     {
         return $this->user_id === $user->id;
@@ -89,9 +84,14 @@ class Project extends Model
         return $this->dataset->row_count;
     }
 
+    public function rowAssignments(): HasMany
+    {
+        return $this->hasMany(RowAssignment::class);
+    }
+
     public function completedRows(): int
     {
-        return $this->dataset->rows()->where('status', 'completed')->count();
+        return $this->rowAssignments()->where('status', 'completed')->count();
     }
 
     public function progressPercentage(): float

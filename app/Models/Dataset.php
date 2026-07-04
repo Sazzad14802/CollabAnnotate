@@ -39,6 +39,11 @@ class Dataset extends Model
 
 
 
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
     public function isImported(): bool
     {
         return $this->import_status === 'completed';
