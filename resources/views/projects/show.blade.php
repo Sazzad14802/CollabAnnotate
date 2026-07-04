@@ -36,9 +36,9 @@
                         </button>
                         <div x-show="open" @click.outside="open = false" x-cloak
                              class="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10">
-                            <a href="#"
+                            <a href="{{ route('projects.export', ['project' => $project->id, 'format' => 'csv']) }}"
                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">CSV</a>
-                            <a href="#"
+                            <a href="{{ route('projects.export', ['project' => $project->id, 'format' => 'xlsx']) }}"
                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">XLSX</a>
                         </div>
                     </div>

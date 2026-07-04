@@ -33,6 +33,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Projects
     Route::resource('projects', \App\Http\Controllers\ProjectController::class);
+    // Export
+    Route::get('/projects/{project}/export/{format}', [App\Http\Controllers\ExportController::class, 'download'])
+        ->name('projects.export')
+        ->where('format', 'csv|xlsx');
 });
 
 require __DIR__.'/auth.php';
