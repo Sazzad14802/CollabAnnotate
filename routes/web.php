@@ -42,12 +42,6 @@ Route::middleware(['auth'])->group(function () {
     // Profile (Breeze Livewire-managed Blade view)
     Route::get('/profile', fn() => view('profile'))->name('profile');
 
-    // Datasets
-    Route::resource('datasets', \App\Http\Controllers\DatasetController::class)
-        ->except(['index'])
-        ->names('datasets');
-    Route::get('/datasets', [\App\Http\Controllers\DatasetController::class, 'index'])->name('datasets.index');
-
     // Projects
     Route::get('/projects/assigned', [\App\Http\Controllers\ProjectController::class, 'assigned'])->name('projects.assigned');
     Route::resource('projects', \App\Http\Controllers\ProjectController::class);

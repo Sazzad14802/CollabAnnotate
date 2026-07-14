@@ -9,10 +9,8 @@
         <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
                 <div class="d-flex align-items-center gap-2 mb-1">
-                    <a href="{{ route('projects.index') }}" wire:navigate class="text-muted">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                        </svg>
+                    <a href="{{ route('projects.index') }}" wire:navigate class="text-muted text-decoration-none">
+                        &larr; Back
                     </a>
                     <h4 class="fw-bold mb-0">{{ $project->name }}</h4>
                     @if($project->status === 'active')
@@ -88,9 +86,9 @@
                             </p>
                         </div>
                     </div>
-                @elseif($project->dataset->import_status !== 'completed')
+                @elseif($project->import_status !== 'completed')
                     <div class="alert alert-info">
-                        Dataset is still importing (status: {{ $project->dataset->import_status }}). Please wait.
+                        Dataset is still importing (status: {{ $project->import_status }}). Please wait.
                     </div>
                 @else
                     <livewire:projects.annotation-workspace :project="$project" />

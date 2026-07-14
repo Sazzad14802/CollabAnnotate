@@ -14,15 +14,23 @@ class Project extends Model
 
     protected $fillable = [
         'user_id',
-        'dataset_id',
         'name',
         'description',
         'status',
         'chunk_size',
+        // Absorbed from Dataset
+        'original_filename',
+        'column_names',
+        'row_count',
+        'file_path',
+        'import_status',
+        'import_error',
     ];
 
     protected $casts = [
-        'chunk_size' => 'integer',
+        'chunk_size'   => 'integer',
+        'column_names' => 'array',
+        'row_count'    => 'integer',
     ];
 
     public function owner(): BelongsTo
@@ -30,11 +38,10 @@ class Project extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function dataset(): BelongsTo
+    public function rows(): HasMany
     {
-        return $this->belongsTo(Dataset::class);
+        return $this->hasMany(DatasetRow::class);
     }
-
 
     public function annotationFields(): HasMany
     {
@@ -68,6 +75,11 @@ class Project extends Model
         return $this->hasMany(ProjectUser::class);
     }
 
+    public function rowAssignments(): HasMany
+    {
+        return $this->hasMany(RowAssignment::class);
+    }
+
     public function isOwner(User $user): bool
     {
         return $this->user_id === $user->id;
@@ -81,12 +93,7 @@ class Project extends Model
     // Progress helpers
     public function totalRows(): int
     {
-        return $this->dataset->row_count;
-    }
-
-    public function rowAssignments(): HasMany
-    {
-        return $this->hasMany(RowAssignment::class);
+        return $this->row_count;
     }
 
     public function completedRows(): int

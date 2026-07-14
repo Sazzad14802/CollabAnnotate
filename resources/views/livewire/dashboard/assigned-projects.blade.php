@@ -16,7 +16,7 @@
             <div class="row g-3">
                 @foreach($projects as $project)
                     @php
-                        $total     = $project->dataset->row_count;
+                        $total     = $project->row_count;
                         $myRows    = $project->rowAssignments()->where('user_id', auth()->id())->count();
                         $myDone    = $project->rowAssignments()->where('user_id', auth()->id())->where('status', 'completed')->count();
                         $pending   = $myRows - $myDone;

@@ -14,8 +14,6 @@ class AnnotatedRows extends Component
 
     public function render()
     {
-        $this->project->loadMissing(['dataset', 'annotationFields']);
-
         $completedAssignments = $this->project->rowAssignments()
             ->where('status', 'completed')
             ->with(['datasetRow.annotations' => function ($query) {

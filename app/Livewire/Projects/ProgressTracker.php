@@ -12,11 +12,7 @@ class ProgressTracker extends Component
 
     public function render(): View
     {
-        // Eager load needed relations
-        $this->project->loadMissing(['dataset', 'annotators']);
-
-        $dataset   = $this->project->dataset;
-        $total     = $dataset->row_count;
+        $total     = $this->project->row_count;
         $completed = $this->project->rowAssignments()->where('status', 'completed')->count();
         $remaining = $total - $completed;
         $percent   = $total > 0 ? round(($completed / $total) * 100, 1) : 0;

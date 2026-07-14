@@ -28,9 +28,9 @@ class ChunkAssignmentService
         }
 
         return DB::transaction(function () use ($project, $user) {
-            // Find rows in this dataset that are NOT assigned in this project
-            $rows = DatasetRow::where('dataset_id', $project->dataset_id)
-                ->whereNotIn('id', function($query) use ($project) {
+            // Find rows in this project that are NOT assigned yet
+            $rows = DatasetRow::where('project_id', $project->id)
+                ->whereNotIn('id', function ($query) use ($project) {
                     $query->select('dataset_row_id')
                           ->from('row_assignments')
                           ->where('project_id', $project->id);
@@ -57,7 +57,7 @@ class ChunkAssignmentService
                     'updated_at'     => $now,
                 ];
             }
-            
+
             RowAssignment::insert($assignments);
 
             return $rows;

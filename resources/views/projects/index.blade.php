@@ -30,7 +30,7 @@
             <div class="row g-3">
                 @foreach($ownedProjects as $project)
                     @php
-                        $total     = $project->dataset->row_count;
+                        $total     = $project->row_count;
                         $completed = $project->rowAssignments()->where('status', 'completed')->count();
                         $percent   = $total > 0 ? round(($completed / $total) * 100) : 0;
                     @endphp
@@ -55,8 +55,8 @@
 
                                 <div class="small text-muted mb-3">
                                     <div class="d-flex justify-content-between border-bottom py-1">
-                                        <span>Dataset</span>
-                                        <span class="text-dark fw-medium">{{ $project->dataset->name }}</span>
+                                        <span>File</span>
+                                        <span class="text-dark fw-medium">{{ $project->original_filename ?? 'N/A' }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between border-bottom py-1">
                                         <span>Annotators</span>

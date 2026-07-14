@@ -45,15 +45,28 @@ class AnnotationWorkspace extends Component
     public function fetchNext(): void
     {
         $this->authorize('annotate', $this->project);
-        
+
+        $countBefore = DatasetRow::where('project_id', $this->project->id)
+            ->whereHas('rowAssignments', function ($query) {
+                $query->where('user_id', auth()->id());
+            })->count();
+
         // Assign a chunk to the current user
         $this->chunkService->assignChunk($this->project, auth()->user());
-        
+
+        $countAfter = DatasetRow::where('project_id', $this->project->id)
+            ->whereHas('rowAssignments', function ($query) {
+                $query->where('user_id', auth()->id());
+            })->count();
+
+        if ($countAfter > $countBefore) {
+            $targetPage = (int) ceil(($countBefore + 1) / 10);
+            $this->setPage($targetPage);
+        }
+
         // Reload annotations
         $this->loadAnnotations();
     }
-
-
 
     private function loadAnnotations(): void
     {
@@ -73,9 +86,9 @@ class AnnotationWorkspace extends Component
     {
         $this->authorize('annotate', $this->project);
 
-        // Verify the row belongs to this project's dataset
+        // Verify the row belongs to this project
         $row = DatasetRow::where('id', $rowId)
-            ->where('dataset_id', $this->project->dataset_id)
+            ->where('project_id', $this->project->id)
             ->firstOrFail();
 
         $field = AnnotationField::where('id', $fieldId)
@@ -121,15 +134,13 @@ class AnnotationWorkspace extends Component
                 $q->where('project_id', $this->project->id)
                   ->where('user_id', auth()->id());
             }])
-            ->where('dataset_id', $this->project->dataset_id)
+            ->where('project_id', $this->project->id)
             ->whereHas('rowAssignments', function ($query) {
                 $query->where('project_id', $this->project->id)
                       ->where('user_id', auth()->id());
             })
             ->orderBy('row_index')
-            ->paginate(25);
-
-        $this->project->loadMissing('dataset');
+            ->paginate(10);
 
         return view('livewire.projects.annotation-workspace', compact('fields', 'rows'));
     }

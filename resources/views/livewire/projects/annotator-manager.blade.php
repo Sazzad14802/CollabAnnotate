@@ -11,12 +11,7 @@
                            class="form-control"
                            id="annotator-search-input"
                            autocomplete="off">
-                    <div wire:loading wire:target="updatedSearchQuery"
-                         class="position-absolute top-50 end-0 translate-middle-y pe-3">
-                        <div class="spinner-border spinner-border-sm text-secondary" role="status">
-                            <span class="visually-hidden">Searching...</span>
-                        </div>
-                    </div>
+
                 </div>
 
                 @if(!empty($searchResults))

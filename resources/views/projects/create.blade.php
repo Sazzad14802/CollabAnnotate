@@ -5,18 +5,15 @@
 
     <div class="container py-4" style="max-width:700px;">
         <div class="mb-3">
-            <a href="{{ route('projects.index') }}" wire:navigate class="text-muted small d-inline-flex align-items-center gap-1">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Back to Projects
+            <a href="{{ route('projects.index') }}" wire:navigate class="text-muted small d-inline-flex align-items-center gap-1 text-decoration-none">
+                &larr; Back to Projects
             </a>
         </div>
 
         <div class="card">
             <div class="card-header">
                 <h5 class="fw-semibold mb-0">Create Annotation Project</h5>
-                <p class="text-muted small mb-0">Set up a new project with a dataset to start annotating.</p>
+                <p class="text-muted small mb-0">Upload a CSV or XLSX file and define your annotation schema.</p>
             </div>
 
             <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
@@ -51,19 +48,13 @@
                         @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
-                    {{-- Dataset Source --}}
+                    {{-- CSV / XLSX File Upload --}}
                     <div class="mb-3">
-                        <label for="dataset-id" class="form-label">Dataset <span class="text-danger">*</span></label>
-                        <select id="dataset-id" name="dataset_id" class="form-select" required>
-                            <option value="">-- Choose a dataset --</option>
-                            @foreach($datasets as $dataset)
-                                <option value="{{ $dataset->id }}" {{ old('dataset_id') == $dataset->id ? 'selected' : '' }}>
-                                    {{ $dataset->name }} ({{ number_format($dataset->row_count) }} rows)
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="form-text">You must select an existing, fully imported dataset.</div>
-                        @error('dataset_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                        <label for="proj-file" class="form-label">Dataset File <span class="text-danger">*</span></label>
+                        <input type="file" id="proj-file" name="file" accept=".csv,.xlsx"
+                               class="form-control @error('file') is-invalid @enderror" required>
+                        <div class="form-text">Upload a CSV or XLSX file. Columns will be auto-detected. Max 50 MB.</div>
+                        @error('file') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     {{-- Annotation Schema --}}
@@ -118,7 +109,7 @@
                         <button type="button" class="btn btn-sm btn-outline-primary" @click="addField">
                             + Add Field
                         </button>
-                        
+
                         @error('schema') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         @error('schema.*') <div class="text-danger small mt-1">Invalid schema definition.</div> @enderror
                     </div>

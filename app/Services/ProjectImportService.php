@@ -2,61 +2,60 @@
 
 namespace App\Services;
 
-use App\Models\Dataset;
+use App\Models\Project;
 use App\Models\DatasetRow;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
-class DatasetImportService
+class ProjectImportService
 {
     private const BULK_INSERT_CHUNK = 500;
 
     /**
-     * Store the uploaded file and create the Dataset record.
-     * Returns the Dataset; the actual row import is dispatched as a job.
+     * Store the uploaded file and set import fields on the project.
+     * Returns the updated Project; the actual row import is dispatched as a job.
      */
-    public function prepareDataset(UploadedFile $file, string $name, int $userId): Dataset
+    public function prepareProject(UploadedFile $file, Project $project): Project
     {
         $ext  = strtolower($file->getClientOriginalExtension());
-        $path = $file->store('datasets', 'local');
+        $path = $file->store('projects', 'local');
 
         // Peek at headers only (fast)
         $headers = $this->extractHeaders($file->getRealPath(), $ext);
 
-        return Dataset::create([
-            'user_id'           => $userId,
-            'name'              => $name,
+        $project->update([
             'original_filename' => $file->getClientOriginalName(),
             'column_names'      => $headers,
             'file_path'         => $path,
             'import_status'     => 'pending',
         ]);
+
+        return $project->fresh();
     }
 
     /**
      * Full import: read all rows and bulk-insert into dataset_rows.
-     * Called from ImportDatasetJob.
+     * Called from ImportProjectJob.
      */
-    public function importRows(Dataset $dataset): void
+    public function importRows(Project $project): void
     {
-        $fullPath = storage_path('app/private/' . $dataset->file_path);
-        $ext      = pathinfo($dataset->original_filename, PATHINFO_EXTENSION);
+        $fullPath = storage_path('app/private/' . $project->file_path);
+        $ext      = pathinfo($project->original_filename, PATHINFO_EXTENSION);
 
-        $dataset->update(['import_status' => 'processing']);
+        $project->update(['import_status' => 'processing']);
 
         try {
-            $rows = $this->readAllRows($fullPath, strtolower($ext), $dataset->column_names);
+            $rows = $this->readAllRows($fullPath, strtolower($ext), $project->column_names);
             $totalInserted = 0;
 
-            DB::transaction(function () use ($dataset, $rows, &$totalInserted) {
+            DB::transaction(function () use ($project, $rows, &$totalInserted) {
                 $now   = now();
                 $chunk = [];
 
                 foreach ($rows as $index => $rowData) {
                     $chunk[] = [
-                        'dataset_id' => $dataset->id,
+                        'project_id' => $project->id,
                         'row_index'  => $index,
                         'data'       => json_encode($rowData),
                         'created_at' => $now,
@@ -76,13 +75,13 @@ class DatasetImportService
                 }
             });
 
-            $dataset->update([
+            $project->update([
                 'row_count'     => $totalInserted,
                 'import_status' => 'completed',
             ]);
 
         } catch (\Throwable $e) {
-            $dataset->update([
+            $project->update([
                 'import_status' => 'failed',
                 'import_error'  => $e->getMessage(),
             ]);
@@ -93,14 +92,14 @@ class DatasetImportService
     private function extractHeaders(string $path, string $ext): array
     {
         if ($ext === 'csv') {
-            $handle = fopen($path, 'r');
+            $handle  = fopen($path, 'r');
             $headers = fgetcsv($handle);
             fclose($handle);
             return array_map('trim', $headers ?: []);
         }
 
         $spreadsheet = IOFactory::load($path);
-        $sheet = $spreadsheet->getActiveSheet();
+        $sheet   = $spreadsheet->getActiveSheet();
         $headers = [];
         foreach ($sheet->getRowIterator(1, 1) as $row) {
             foreach ($row->getCellIterator() as $cell) {
@@ -128,7 +127,7 @@ class DatasetImportService
         $reader = IOFactory::createReaderForFile($path);
         $reader->setReadDataOnly(true);
         $spreadsheet = $reader->load($path);
-        $sheet = $spreadsheet->getActiveSheet();
+        $sheet    = $spreadsheet->getActiveSheet();
         $firstRow = true;
 
         foreach ($sheet->getRowIterator() as $row) {

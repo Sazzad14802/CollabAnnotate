@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ImportProjectJob;
 use App\Models\AnnotationField;
-use App\Models\Dataset;
 use App\Models\Project;
+use App\Services\ProjectImportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,14 +16,10 @@ class ProjectController extends Controller
     public function index(): View
     {
         $ownedProjects = auth()->user()->ownedProjects()
-            ->with(['dataset', 'members'])
+            ->with('members')
             ->withCount('annotators')
             ->latest()
             ->get();
-            
-        foreach ($ownedProjects as $p) {
-            // $p->annotators_count = 0;
-        }
 
         return view('projects.index', compact('ownedProjects'));
     }
@@ -34,44 +31,37 @@ class ProjectController extends Controller
 
     public function create(): View
     {
-        $datasets = auth()->user()->datasets()
-            ->where('import_status', 'completed')
-            ->orderBy('name')
-            ->get();
-
-        return view('projects.create', compact('datasets'));
+        return view('projects.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ProjectImportService $importService): RedirectResponse
     {
         $user = auth()->user();
 
         $request->validate([
-            'name'              => [
+            'name'        => [
                 'required',
                 'string',
                 'max:255',
                 Rule::unique('projects')->where(fn ($query) => $query->where('user_id', $user->id))
             ],
-            'description'       => ['nullable', 'string', 'max:2000'],
-            'dataset_id'        => ['required', 'exists:datasets,id'],
-            'chunk_size'        => ['nullable', 'integer', 'min:1', 'max:1000'],
-            'schema'            => ['required', 'array', 'min:1'],
-            'schema.*.name'     => ['required', 'string', 'max:100'],
-            'schema.*.type'     => ['required', 'in:select,checkbox'],
-            'schema.*.options'  => ['nullable', 'string', 'required_if:schema.*.type,select'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'file'        => ['required', 'file', 'extensions:csv,xlsx', 'max:51200'],
+            'chunk_size'  => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'schema'      => ['required', 'array', 'min:1'],
+            'schema.*.name'    => ['required', 'string', 'max:100'],
+            'schema.*.type'    => ['required', 'in:select,checkbox'],
+            'schema.*.options' => ['nullable', 'string', 'required_if:schema.*.type,select'],
             'schema.*.is_required' => ['boolean'],
         ]);
 
-        $dataset = Dataset::findOrFail($request->dataset_id);
-        $this->authorize('view', $dataset);
-
+        // Create the project first (without file info — import service fills that)
         $project = Project::create([
             'user_id'     => $user->id,
-            'dataset_id'  => $dataset->id,
             'name'        => $request->name,
             'description' => $request->description,
             'chunk_size'  => $request->chunk_size ?? 10,
+            'import_status' => 'pending',
         ]);
 
         // Add owner to project_users
@@ -98,15 +88,19 @@ class ProjectController extends Controller
             ]);
         }
 
+        // Store the file and kick off background import
+        $importService->prepareProject($request->file('file'), $project);
+        ImportProjectJob::dispatch($project, $user);
+
         return redirect()->route('projects.show', $project)
-            ->with('success', 'Project created successfully.');
+            ->with('success', 'Project created! Your CSV is being imported in the background.');
     }
 
     public function show(Project $project): View
     {
         $this->authorize('view', $project);
 
-        $project->load(['dataset', 'annotators', 'annotationFields']);
+        $project->load(['annotators', 'annotationFields']);
 
         return view('projects.show', compact('project'));
     }

@@ -5,11 +5,8 @@
 
     <div class="container py-4" style="max-width:600px;">
         <div class="mb-3">
-            <a href="{{ route('projects.show', $project) }}" wire:navigate class="text-muted small d-inline-flex align-items-center gap-1">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Back to Project
+            <a href="{{ route('projects.show', $project) }}" wire:navigate class="text-muted small d-inline-flex align-items-center gap-1 text-decoration-none">
+                &larr; Back to Project
             </a>
         </div>
 

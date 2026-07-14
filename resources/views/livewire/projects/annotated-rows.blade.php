@@ -9,8 +9,8 @@
                 <thead class="table-light">
                     <tr>
                         {{-- Dataset Original Columns --}}
-                        @if($project->dataset->column_names)
-                            @foreach($project->dataset->column_names as $colName)
+                        @if($project->column_names)
+                                @foreach($project->column_names as $colName)
                                 <th>{{ $colName }}</th>
                             @endforeach
                         @endif
@@ -32,8 +32,8 @@
                         <tr>
                             
                             {{-- Dataset Original Values --}}
-                            @if($project->dataset->column_names)
-                                @foreach($project->dataset->column_names as $colName)
+                            @if($project->column_names)
+                                    @foreach($project->column_names as $colName)
                                     <td class="text-truncate" style="max-width: 250px;" title="{{ $data[$colName] ?? '' }}">
                                         {{ $data[$colName] ?? '-' }}
                                     </td>

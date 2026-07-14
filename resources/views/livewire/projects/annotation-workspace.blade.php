@@ -13,15 +13,7 @@
         <button wire:click="fetchNext" class="btn btn-primary fw-medium px-4">Fetch Next Rows</button>
     </div>
 
-    {{-- Loading overlay --}}
-    <div wire:loading wire:target="fetchNext,saveAnnotation"
-         class="position-fixed top-50 start-50 translate-middle" style="z-index:100;">
-        <div class="bg-white rounded-circle shadow p-2">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    </div>
+
 
     @if($rows->isEmpty())
         <div class="card">
@@ -42,7 +34,7 @@
                     <tr>
                         <th style="width:40px;">#</th>
                         {{-- Dataset columns --}}
-                        @foreach($project->dataset->column_names as $col)
+                        @foreach($project->column_names as $col)
                             <th>{{ $col }}</th>
                         @endforeach
                         {{-- Annotation columns --}}
@@ -70,7 +62,7 @@
 
                             <td class="text-muted small font-monospace">{{ $row->row_index + 1 }}</td>
 
-                            @foreach($project->dataset->column_names as $col)
+                            @foreach($project->column_names as $col)
                                 <td style="max-width:200px;">
                                     <div class="text-truncate small" title="{{ $row->data[$col] ?? '' }}">
                                         {{ $row->data[$col] ?? '—' }}
@@ -124,9 +116,7 @@
 
         {{-- Pagination --}}
         <div class="d-flex justify-content-between align-items-center mt-3">
-            <p class="text-muted small mb-0">
-                Showing {{ $rows->firstItem() }}–{{ $rows->lastItem() }} of {{ $rows->total() }} assigned rows
-            </p>
+
             {{ $rows->links() }}
         </div>
     @endif

@@ -11,11 +11,17 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // owner
-            $table->foreignId('dataset_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'completed', 'archived'])->default('active');
             $table->unsignedInteger('chunk_size')->default(10);
+            // Absorbed from the old datasets table
+            $table->string('original_filename')->nullable();
+            $table->json('column_names')->nullable();
+            $table->unsignedInteger('row_count')->default(0);
+            $table->string('file_path')->nullable();
+            $table->enum('import_status', ['pending', 'processing', 'completed', 'failed'])->default('pending');
+            $table->text('import_error')->nullable();
             $table->timestamps();
         });
     }

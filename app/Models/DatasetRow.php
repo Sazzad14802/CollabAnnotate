@@ -12,19 +12,19 @@ class DatasetRow extends Model
     use HasFactory;
 
     protected $fillable = [
-        'dataset_id',
+        'project_id',
         'row_index',
         'data',
     ];
 
     protected $casts = [
-        'data' => 'array',
+        'data'      => 'array',
         'row_index' => 'integer',
     ];
 
-    public function dataset(): BelongsTo
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(Dataset::class);
+        return $this->belongsTo(Project::class);
     }
 
     public function rowAssignments(): HasMany

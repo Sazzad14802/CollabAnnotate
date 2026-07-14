@@ -6,24 +6,21 @@ use App\Models\Project;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv as CsvWriter;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
-use PhpOffice\PhpSpreadsheet\Style\Font;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class AnnotationExportService
 {
     public function export(Project $project, string $format = 'csv'): string
     {
-        $dataset = $project->dataset;
-        $fields  = $project->annotationFields()->orderBy('order')->get();
-        $rows    = $dataset->rows()->with('annotations.field')->get();
+        $fields = $project->annotationFields()->orderBy('order')->get();
+        $rows   = $project->rows()->with('annotations.field')->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Annotations');
 
         // Build headers
-        $dataColumns      = $dataset->column_names;
+        $dataColumns       = $project->column_names ?? [];
         $annotationColumns = $fields->pluck('name')->toArray();
         $headers           = array_merge($dataColumns, $annotationColumns);
 
