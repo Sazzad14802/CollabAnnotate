@@ -124,10 +124,9 @@ class ProjectController extends Controller
             ],
             'description' => ['nullable', 'string', 'max:2000'],
             'chunk_size'  => ['nullable', 'integer', 'min:1', 'max:1000'],
-            'status'      => ['nullable', 'in:active,completed,archived'],
         ]);
 
-        $project->update($request->only('name', 'description', 'chunk_size', 'status'));
+        $project->update($request->only('name', 'description', 'chunk_size'));
 
         return redirect()->route('projects.show', $project)
             ->with('success', 'Project updated.');

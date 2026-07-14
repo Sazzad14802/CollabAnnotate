@@ -11,7 +11,6 @@
                            class="form-control"
                            id="annotator-search-input"
                            autocomplete="off">
-
                 </div>
 
                 @if(!empty($searchResults))

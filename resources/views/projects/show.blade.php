@@ -13,11 +13,7 @@
                         &larr; Back
                     </a>
                     <h4 class="fw-bold mb-0">{{ $project->name }}</h4>
-                    @if($project->status === 'active')
-                        <span class="badge badge-green rounded-pill">Active</span>
-                    @else
-                        <span class="badge badge-gray rounded-pill">{{ ucfirst($project->status) }}</span>
-                    @endif
+
                 </div>
                 @if($project->description)
                     <p class="text-muted small ms-4 mb-0">{{ $project->description }}</p>
@@ -60,7 +56,7 @@
                     <li class="nav-item">
                         <button @click="tab = 'annotated_rows'"
                                 :class="tab === 'annotated_rows' ? 'nav-link active' : 'nav-link'"
-                                type="button">Annotated Rows</button>
+                                type="button">Dataset Rows</button>
                     </li>
                     <li class="nav-item">
                         <button @click="tab = 'annotators'"
@@ -100,7 +96,7 @@
                 <livewire:projects.progress-tracker :project="$project" />
             </div>
 
-            {{-- Annotators & Annotated Rows Tabs --}}
+            {{-- Annotators & Dataset Rows Tabs --}}
             @can('manageSchema', $project)
                 <div x-show="tab === 'annotated_rows'" x-cloak>
                     <livewire:projects.annotated-rows :project="$project" />

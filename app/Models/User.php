@@ -64,10 +64,6 @@ class User extends Authenticatable
             ->withCasts(['joined_at' => 'datetime']);
     }
 
-    public function datasets(): HasMany
-    {
-        return $this->hasMany(Dataset::class);
-    }
 
     public function ownedProjects(): HasMany
     {

@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // owner
             $table->string('name');
             $table->text('description')->nullable();
-            $table->enum('status', ['active', 'completed', 'archived'])->default('active');
+
             $table->unsignedInteger('chunk_size')->default(10);
             // Absorbed from the old datasets table
             $table->string('original_filename')->nullable();

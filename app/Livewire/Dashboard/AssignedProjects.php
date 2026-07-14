@@ -10,7 +10,7 @@ class AssignedProjects extends Component
     public function render(): View
     {
         $projects = auth()->user()->assignedProjects()
-            ->with(['owner', 'dataset'])
+            ->with(['owner'])
             ->latest('project_users.joined_at')
             ->get();
 

@@ -16,7 +16,6 @@ class Project extends Model
         'user_id',
         'name',
         'description',
-        'status',
         'chunk_size',
         // Absorbed from Dataset
         'original_filename',
@@ -95,6 +94,8 @@ class Project extends Model
     {
         return $this->row_count;
     }
+
+
 
     public function completedRows(): int
     {

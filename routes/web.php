@@ -5,22 +5,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 
-Route::get('/test-ai', function () {
-    $apiKey = 'AIzaSyBwl6nOpgPZ4Z3e-JAnCxSFsYAJUpTl_cg'; 
-    
-    // Notice this is now a ->post() and includes the 'contents' array!
-    $response = Http::withOptions(['verify' => false])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=' . $apiKey, [
-        'contents' => [
-            [
-                'parts' => [
-                    ['text' => 'Classify the sentiment of this text: "This project is new . but it could be faster" as POSITIVE, NEGATIVE, or NEUTRAL.']
-                ]
-            ]
-        ]
-    ]);
-    // Return the raw JSON to your browser screen
-    return $response->json(); 
-});
 // Welcome page
 Route::get('/', function () {
     return redirect()->route('dashboard');

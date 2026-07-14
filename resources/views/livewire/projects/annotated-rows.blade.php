@@ -1,7 +1,7 @@
 <div>
     <div class="card">
         <div class="card-header bg-white border-bottom py-3">
-            <h6 class="mb-0 fw-semibold">Annotated Rows</h6>
+            <h6 class="mb-0 fw-semibold">Dataset Rows</h6>
         </div>
         
         <div class="table-responsive">
@@ -21,13 +21,13 @@
                         @endforeach
 
                         <th>Annotator Email</th>
-                        <th class="pe-4 text-end">Completed At</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($completedAssignments as $assignment)
+                    @forelse($datasetRows as $row)
                         @php
-                            $data = $assignment->datasetRow->data ?? [];
+                            $data = $row->data ?? [];
+                            $annotators = $row->annotations->pluck('user')->unique('id');
                         @endphp
                         <tr>
                             
@@ -43,10 +43,8 @@
                             {{-- Annotation Values --}}
                             @foreach($project->annotationFields as $field)
                                 @php
-                                    // Find the specific annotation for this field by this user on this row
-                                    $annotation = $assignment->datasetRow->annotations->firstWhere(function ($ann) use ($field, $assignment) {
-                                        return $ann->annotation_field_id === $field->id && $ann->user_id === $assignment->user_id;
-                                    });
+                                    // Just get the first annotation value for this field on this row
+                                    $annotation = $row->annotations->firstWhere('annotation_field_id', $field->id);
                                 @endphp
                                 <td class="bg-indigo-50 bg-opacity-25 fw-medium">
                                     {{ $annotation ? $annotation->value : '-' }}
@@ -54,15 +52,20 @@
                             @endforeach
 
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar avatar-sm bg-indigo text-white rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; font-size:10px;">
-                                        {{ strtoupper(substr($assignment->user->name, 0, 1)) }}
+                                @if($annotators->isNotEmpty())
+                                    <div class="d-flex flex-column gap-1">
+                                        @foreach($annotators as $user)
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="avatar avatar-sm bg-indigo text-white rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; font-size:10px;">
+                                                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                </div>
+                                                <span>{{ $user->email }}</span>
+                                            </div>
+                                        @endforeach
                                     </div>
-                                    <span>{{ $assignment->user->email }}</span>
-                                </div>
-                            </td>
-                            <td class="pe-4 text-end text-muted small">
-                                {{ $assignment->updated_at->format('M d, Y H:i') }}
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -76,10 +79,6 @@
             </table>
         </div>
         
-        @if($completedAssignments->hasPages())
-            <div class="card-footer bg-white border-top py-3">
-                {{ $completedAssignments->links() }}
-            </div>
-        @endif
+
     </div>
 </div>

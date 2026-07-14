@@ -109,7 +109,6 @@
                         <button type="button" class="btn btn-sm btn-outline-primary" @click="addField">
                             + Add Field
                         </button>
-
                         @error('schema') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         @error('schema.*') <div class="text-danger small mt-1">Invalid schema definition.</div> @enderror
                     </div>

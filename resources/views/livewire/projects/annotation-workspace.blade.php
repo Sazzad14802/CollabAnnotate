@@ -14,7 +14,6 @@
     </div>
 
 
-
     @if($rows->isEmpty())
         <div class="card">
             <div class="card-body text-center py-5">
@@ -116,7 +115,6 @@
 
         {{-- Pagination --}}
         <div class="d-flex justify-content-between align-items-center mt-3">
-
             {{ $rows->links() }}
         </div>
     @endif

@@ -39,14 +39,7 @@
                                min="1" max="1000" class="form-control" style="width:120px;">
                     </div>
 
-                    <div class="mb-3">
-                        <label for="edit-status" class="form-label">Status</label>
-                        <select id="edit-status" name="status" class="form-select" style="width:180px;">
-                            <option value="active" {{ $project->status === 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="completed" {{ $project->status === 'completed' ? 'selected' : '' }}>Completed</option>
-                            <option value="archived" {{ $project->status === 'archived' ? 'selected' : '' }}>Archived</option>
-                        </select>
-                    </div>
+
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
                     <a href="{{ route('projects.show', $project) }}" wire:navigate class="btn btn-outline-secondary">Cancel</a>

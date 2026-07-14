@@ -44,13 +44,6 @@
                                             <small class="text-muted">{{ Str::limit($project->description, 60) }}</small>
                                         @endif
                                     </div>
-                                    @if($project->status === 'active')
-                                        <span class="badge badge-green rounded-pill">Active</span>
-                                    @elseif($project->status === 'completed')
-                                        <span class="badge badge-indigo rounded-pill">Completed</span>
-                                    @else
-                                        <span class="badge badge-gray rounded-pill">Archived</span>
-                                    @endif
                                 </div>
 
                                 <div class="small text-muted mb-3">
