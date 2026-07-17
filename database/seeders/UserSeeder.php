@@ -12,20 +12,16 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'name'     => 'Alice Johnson',
-                'email'    => 'alice@test.com',
+                'name'     => 'Alif',
+                'email'    => 'alif@test.com',
             ],
             [
-                'name'     => 'Bob Smith',
-                'email'    => 'bob@test.com',
+                'name'     => 'Siyam',
+                'email'    => 'siyam@test.com',
             ],
             [
-                'name'     => 'Charlie Davis',
-                'email'    => 'charlie@test.com',
-            ],
-            [
-                'name'     => 'Diana Lee',
-                'email'    => 'diana@test.com',
+                'name'     => 'Abrar',
+                'email'    => 'abrar@test.com',
             ],
         ];
 
@@ -38,5 +34,15 @@ class UserSeeder extends Seeder
                 ]
             );
         }
+
+        // Admin account
+        User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'name'     => 'Admin',
+                'password' => Hash::make('admin'),
+                'is_admin' => true,
+            ]
+        );
     }
 }

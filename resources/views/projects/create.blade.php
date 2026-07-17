@@ -12,7 +12,6 @@
 
         <div class="card">
             <div class="card-header">
-                <h5 class="fw-semibold mb-0">Create Annotation Project</h5>
                 <p class="text-muted small mb-0">Upload a CSV or XLSX file and define your annotation schema.</p>
             </div>
 
@@ -60,10 +59,10 @@
                     {{-- Annotation Schema --}}
                     <div class="mb-4 pt-3 border-top" x-data="{
                         fields: [
-                            { name: 'Sentiment', type: 'select', options: 'Positive, Negative, Neutral', is_required: true }
+                            { name: 'Sentiment', options: 'Positive, Negative, Neutral' }
                         ],
                         addField() {
-                            this.fields.push({ name: '', type: 'select', options: '', is_required: false });
+                            this.fields.push({ name: '', options: '' });
                         },
                         removeField(index) {
                             this.fields.splice(index, 1);
@@ -83,23 +82,12 @@
                                             </button>
                                         </div>
                                         <div class="row g-2">
-                                            <div class="col-md-4">
+                                            <div class="col-md-5">
                                                 <input type="text" x-model="field.name" :name="'schema['+index+'][name]'" class="form-control form-control-sm" placeholder="Field Name (e.g. Sentiment)" required>
                                             </div>
-                                            <div class="col-md-3">
-                                                <select x-model="field.type" :name="'schema['+index+'][type]'" class="form-select form-select-sm" required>
-                                                    <option value="select">Dropdown (Select)</option>
-                                                    <option value="checkbox">Checkbox (Yes/No)</option>
-                                                </select>
+                                            <div class="col-md-7">
+                                                <input type="text" x-model="field.options" :name="'schema['+index+'][options]'" class="form-control form-control-sm" placeholder="Comma separated options" required>
                                             </div>
-                                            <div class="col-md-5">
-                                                <input type="text" x-model="field.options" :name="'schema['+index+'][options]'" x-show="field.type === 'select'" class="form-control form-control-sm" placeholder="Comma separated options" :required="field.type === 'select'">
-                                            </div>
-                                        </div>
-                                        <div class="mt-2 form-check">
-                                            <input type="hidden" :name="'schema['+index+'][is_required]'" value="0">
-                                            <input class="form-check-input" type="checkbox" value="1" x-model="field.is_required" :name="'schema['+index+'][is_required]'" :id="'req-'+index">
-                                            <label class="form-check-label small" :for="'req-'+index">Required field</label>
                                         </div>
                                     </div>
                                 </div>

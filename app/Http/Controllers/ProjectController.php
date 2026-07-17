@@ -50,9 +50,7 @@ class ProjectController extends Controller
             'chunk_size'  => ['nullable', 'integer', 'min:1', 'max:1000'],
             'schema'      => ['required', 'array', 'min:1'],
             'schema.*.name'    => ['required', 'string', 'max:100'],
-            'schema.*.type'    => ['required', 'in:select,checkbox'],
-            'schema.*.options' => ['nullable', 'string', 'required_if:schema.*.type,select'],
-            'schema.*.is_required' => ['boolean'],
+            'schema.*.options' => ['required', 'string'],
         ]);
 
         // Create the project first (without file info — import service fills that)
@@ -72,18 +70,15 @@ class ProjectController extends Controller
 
         // Save schema fields
         foreach ($request->schema as $index => $fieldData) {
-            $options = null;
-            if ($fieldData['type'] === 'select' && !empty($fieldData['options'])) {
-                $options = array_values(array_filter(array_map('trim', explode(',', $fieldData['options']))));
-            }
+            $options = array_values(array_filter(array_map('trim', explode(',', $fieldData['options']))));
 
             AnnotationField::create([
                 'project_id'  => $project->id,
                 'name'        => $fieldData['name'],
                 'slug'        => str($fieldData['name'])->slug()->toString(),
-                'type'        => $fieldData['type'],
+                'type'        => 'select',
                 'options'     => $options,
-                'is_required' => !empty($fieldData['is_required']),
+                'is_required' => true,
                 'order'       => $index,
             ]);
         }

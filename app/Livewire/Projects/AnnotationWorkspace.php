@@ -112,8 +112,94 @@ class AnnotationWorkspace extends Component
         // Check if row is now complete
         $this->chunkService->markRowCompleted($row, $this->project);
 
+        $this->dispatch('progress-updated');
+
         // Flash saved indicator
         $this->savedRows[$rowId] = true;
+    }
+
+    public function suggestAnnotation(int $rowId): void
+    {
+        $this->authorize('annotate', $this->project);
+        
+        $apiKey = env('GEMINI_API_KEY');
+        if (!$apiKey) {
+            $this->addError('ai_error', 'GEMINI_API_KEY is not configured in your .env file.');
+            return;
+        }
+
+        $row = DatasetRow::where('id', $rowId)
+            ->where('project_id', $this->project->id)
+            ->firstOrFail();
+            
+        $fields = $this->project->annotationFields()->orderBy('order')->get();
+        if ($fields->isEmpty()) return;
+
+        // Build prompt
+        $schemaDesc = [];
+        foreach ($fields as $f) {
+            if ($f->type === 'select') {
+                $opts = implode(', ', $f->options ?? []);
+                $schemaDesc[] = "\"{$f->slug}\": string (must be exactly one of: {$opts})";
+            } else {
+                $schemaDesc[] = "\"{$f->slug}\": string (must be exactly '1' for yes, or '0' for no)";
+            }
+        }
+        $schemaStr = implode("\n", $schemaDesc);
+        
+        $dataStr = json_encode($row->data, JSON_PRETTY_PRINT);
+
+        $prompt = "You are a data annotation assistant. Analyze the following JSON data representing a single row of a dataset:\n\n{$dataStr}\n\nBased on this data, predict the values for the following annotation fields according to their constraints:\n{$schemaStr}\n\nRespond ONLY with a valid JSON object where the keys are the field names and values are your predictions. Do not include markdown blocks or any other text.";
+
+        try {
+            $client = new \GuzzleHttp\Client(['verify' => false]);
+            $response = $client->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=' . $apiKey, [
+                'json' => [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt]
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                $result = json_decode($response->getBody()->getContents(), true);
+                $aiText = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                
+                // Clean markdown artifacts if present
+                $aiText = trim(str_replace(['```json', '```'], '', $aiText));
+                
+                $predictions = json_decode($aiText, true);
+                
+                if (is_array($predictions)) {
+                    foreach ($fields as $field) {
+                        if (isset($predictions[$field->slug])) {
+                            $predictedValue = (string) $predictions[$field->slug];
+                            
+                            $isValid = false;
+                            if ($field->type === 'select' && in_array($predictedValue, $field->options ?? [])) {
+                                $isValid = true;
+                            } elseif ($field->type === 'checkbox' && in_array($predictedValue, ['0', '1'])) {
+                                $isValid = true;
+                            }
+                            
+                            if ($isValid) {
+                                $this->saveAnnotation($row->id, $field->id, $predictedValue);
+                            }
+                        }
+                    }
+                } else {
+                    $this->addError('ai_error', 'AI returned malformed JSON.');
+                }
+            } else {
+                 $this->addError('ai_error', 'Failed to communicate with AI API.');
+            }
+        } catch (\Exception $e) {
+            $this->addError('ai_error', 'Error: ' . $e->getMessage());
+        }
     }
 
     public function getAnnotationValue(int $rowId, int $fieldId): mixed

@@ -21,6 +21,9 @@
                         $myDone    = $project->rowAssignments()->where('user_id', auth()->id())->where('status', 'completed')->count();
                         $pending   = $myRows - $myDone;
                         $percent   = $myRows > 0 ? round(($myDone / $myRows) * 100) : 0;
+                        
+                        $overallCompleted = $project->rowAssignments()->where('status', 'completed')->count();
+                        $overallPercent   = $total > 0 ? round(($overallCompleted / $total) * 100) : 0;
                     @endphp
                     <div class="col-12 col-md-6 col-lg-4">
                         <div class="card h-100">
@@ -28,7 +31,7 @@
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div>
                                         <h6 class="fw-semibold mb-0">{{ $project->name }}</h6>
-                                        <small class="text-muted">by {{ $project->owner->name }}</small>
+                                        <small class="text-muted">by {{ $project->owner->email }}</small>
                                     </div>
                                     <span class="badge badge-indigo rounded-pill">Annotator</span>
                                 </div>
@@ -43,12 +46,19 @@
                                     </div>
                                 </div>
 
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span>Overall Progress</span>
+                                        <span>{{ $overallCompleted }} / {{ $total }} rows</span>
+                                    </div>
+                                    <div class="progress" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:{{ $overallPercent }}%"></div>
+                                    </div>
+                                </div>
+
                                 <div class="d-flex justify-content-between small mb-3">
                                     <span class="{{ $pending > 0 ? 'text-warning fw-medium' : 'text-success fw-medium' }}">
                                         {{ $pending > 0 ? "{$pending} rows pending" : '✓ All done!' }}
-                                    </span>
-                                    <span class="text-muted">
-                                        {{ $project->pivot->joined_at ? \Carbon\Carbon::parse($project->pivot->joined_at)->format('M d, Y') : '' }}
                                     </span>
                                 </div>
 

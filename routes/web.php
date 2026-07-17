@@ -3,7 +3,6 @@
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Http;
 
 // Welcome page
 Route::get('/', function () {
@@ -33,6 +32,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/projects/{project}/export/{format}', [App\Http\Controllers\ExportController::class, 'download'])
         ->name('projects.export')
         ->where('format', 'csv|xlsx');
+});
+
+// Admin routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+    Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
 });
 
 require __DIR__ . '/auth.php';

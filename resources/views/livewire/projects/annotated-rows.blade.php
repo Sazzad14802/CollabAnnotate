@@ -1,7 +1,10 @@
-<div>
+<div wire:poll.5s>
     <div class="card">
-        <div class="card-header bg-white border-bottom py-3">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h6 class="mb-0 fw-semibold">Dataset Rows</h6>
+            <div style="width: 250px;">
+                <input type="text" wire:model.live.debounce.300ms="annotatorEmail" class="form-control form-control-sm" placeholder="Filter by annotator email...">
+            </div>
         </div>
         
         <div class="table-responsive">
@@ -56,9 +59,6 @@
                                     <div class="d-flex flex-column gap-1">
                                         @foreach($annotators as $user)
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="avatar avatar-sm bg-indigo text-white rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; font-size:10px;">
-                                                    {{ strtoupper(substr($user->name, 0, 1)) }}
-                                                </div>
                                                 <span>{{ $user->email }}</span>
                                             </div>
                                         @endforeach

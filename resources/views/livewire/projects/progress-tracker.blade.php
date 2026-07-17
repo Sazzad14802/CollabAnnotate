@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.5s>
     {{-- Overall Stats --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-sm-3">

@@ -9,9 +9,15 @@
         <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
                 <div class="d-flex align-items-center gap-2 mb-1">
-                    <a href="{{ route('projects.index') }}" wire:navigate class="text-muted text-decoration-none">
-                        &larr; Back
-                    </a>
+                    @if($project->user_id === auth()->id())
+                        <a href="{{ route('projects.index') }}" wire:navigate class="text-muted text-decoration-none">
+                            &larr; Back
+                        </a>
+                    @else
+                        <a href="{{ route('projects.assigned') }}" wire:navigate class="text-muted text-decoration-none">
+                            &larr; Back
+                        </a>
+                    @endif
                     <h4 class="fw-bold mb-0">{{ $project->name }}</h4>
 
                 </div>

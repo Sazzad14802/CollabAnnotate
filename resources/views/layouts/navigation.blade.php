@@ -21,6 +21,11 @@
                     <x-nav-link :href="route('projects.assigned')" :active="request()->routeIs('projects.assigned')" wire:navigate>
                         Assigned Projects
                     </x-nav-link>
+                    @if(auth()->user()->isAdmin())
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.*')" wire:navigate>
+                            🛡 Admin
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -83,6 +88,11 @@
             <x-responsive-nav-link :href="route('projects.assigned')" :active="request()->routeIs('projects.assigned')" wire:navigate>
                 Assigned Projects
             </x-responsive-nav-link>
+            @if(auth()->user()->isAdmin())
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.*')" wire:navigate>
+                    🛡 Admin
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

@@ -4,11 +4,18 @@ namespace App\Livewire\Projects;
 
 use App\Models\Project;
 use Livewire\Component;
+use Livewire\Attributes\On;
 use Illuminate\Contracts\View\View;
 
 class ProgressTracker extends Component
 {
     public Project $project;
+
+    #[On('progress-updated')]
+    public function updateStats()
+    {
+        // This blank method triggers a component re-render when the event is caught
+    }
 
     public function render(): View
     {
@@ -20,10 +27,10 @@ class ProgressTracker extends Component
         // Per-annotator stats
         $annotatorStats = $this->project->annotators
             ->map(function ($annotator) {
-                $annotated = $annotator->annotations()
-                    ->where('project_id', $this->project->id)
-                    ->distinct('dataset_row_id')
-                    ->count('dataset_row_id');
+                $annotated = $this->project->rowAssignments()
+                    ->where('user_id', $annotator->id)
+                    ->where('status', 'completed')
+                    ->count();
 
                 $lastActivity = $annotator->annotations()
                     ->where('project_id', $this->project->id)

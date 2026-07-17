@@ -68,25 +68,7 @@
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('projects.show', $project) }}" wire:navigate
                                        class="btn btn-primary btn-sm flex-fill text-center">Open</a>
-                                    <a href="{{ route('projects.edit', $project) }}" wire:navigate
-                                       class="btn btn-outline-secondary btn-sm">Edit</a>
-                                    <div class="dropdown">
-                                        <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="dropdown">
-                                            ···
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#">Export CSV</a></li>
-                                            <li><a class="dropdown-item" href="#">Export XLSX</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <form action="{{ route('projects.destroy', $project) }}" method="POST"
-                                                      onsubmit="return confirm('Delete this project?')">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="dropdown-item text-danger">Delete</button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>

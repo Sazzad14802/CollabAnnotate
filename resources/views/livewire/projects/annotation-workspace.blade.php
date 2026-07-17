@@ -14,6 +14,14 @@
     </div>
 
 
+    @error('ai_error')
+        <div class="alert alert-danger d-flex align-items-center mb-3">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="me-2">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>{{ $message }}</div>
+        </div>
+    @enderror
     @if($rows->isEmpty())
         <div class="card">
             <div class="card-body text-center py-5">
@@ -40,12 +48,10 @@
                         @foreach($fields as $field)
                             <th class="table-primary">
                                 {{ $field->name }}
-                                @if($field->is_required)
-                                    <span class="text-danger">*</span>
-                                @endif
+                                <span class="text-danger">*</span>
                             </th>
                         @endforeach
-                        <th style="width:60px;" class="text-center">Done</th>
+                        <th style="width:100px;" class="text-center">AI Assist</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,40 +77,39 @@
 
                             @foreach($fields as $field)
                                 <td class="table-primary bg-opacity-25" style="min-width:140px;" @click.stop>
-                                    @if($field->type === 'select')
-                                        <select
-                                            wire:change="saveAnnotation({{ $row->id }}, {{ $field->id }}, $event.target.value)"
-                                            class="form-select form-select-sm"
-                                            id="annot-{{ $row->id }}-{{ $field->id }}">
-                                            <option value="">— Select —</option>
-                                            @foreach($field->options ?? [] as $opt)
-                                                <option value="{{ $opt }}"
-                                                    {{ ($annotations[$row->id][$field->id] ?? null) === $opt ? 'selected' : '' }}>
-                                                    {{ $opt }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @elseif($field->type === 'checkbox')
-                                        <div class="form-check">
-                                            <input
-                                                type="checkbox"
-                                                class="form-check-input"
-                                                wire:change="saveAnnotation({{ $row->id }}, {{ $field->id }}, $event.target.checked ? '1' : '0')"
-                                                {{ ($annotations[$row->id][$field->id] ?? '0') === '1' ? 'checked' : '' }}
-                                                id="annot-{{ $row->id }}-{{ $field->id }}">
-                                            <label class="form-check-label small" for="annot-{{ $row->id }}-{{ $field->id }}">Yes</label>
-                                        </div>
-                                    @endif
+                                    <select
+                                        wire:change="saveAnnotation({{ $row->id }}, {{ $field->id }}, $event.target.value)"
+                                        class="form-select form-select-sm"
+                                        id="annot-{{ $row->id }}-{{ $field->id }}">
+                                        <option value="">— Select —</option>
+                                        @foreach($field->options ?? [] as $opt)
+                                            <option value="{{ $opt }}"
+                                                {{ ($annotations[$row->id][$field->id] ?? null) === $opt ? 'selected' : '' }}>
+                                                {{ $opt }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </td>
                             @endforeach
 
-                            <td class="text-center">
+                            <td class="text-center align-middle">
                                 @if($isComplete)
-                                    <svg class="text-success" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="text-success" width="20" height="20" fill="currentColor" viewBox="0 0 20 20" title="Completed">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                     </svg>
                                 @else
-                                    <div class="rounded-circle border border-2 mx-auto" style="width:16px;height:16px;"></div>
+                                    <button 
+                                        wire:click="suggestAnnotation({{ $row->id }})" 
+                                        class="btn btn-sm btn-outline-primary py-0 px-2"
+                                        title="Auto-fill with AI"
+                                        wire:loading.attr="disabled"
+                                        wire:target="suggestAnnotation({{ $row->id }})"
+                                    >
+                                        <span wire:loading.remove wire:target="suggestAnnotation({{ $row->id }})">🪄 Ask AI</span>
+                                        <span wire:loading wire:target="suggestAnnotation({{ $row->id }})">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        </span>
+                                    </button>
                                 @endif
                             </td>
                         </tr>
