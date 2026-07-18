@@ -100,6 +100,24 @@ class ProjectController extends Controller
         return view('projects.show', compact('project'));
     }
 
+    public function progress(Project $project): View
+    {
+        $this->authorize('view', $project);
+        return view('projects.progress', compact('project'));
+    }
+
+    public function rows(Project $project): View
+    {
+        $this->authorize('manageSchema', $project);
+        return view('projects.rows', compact('project'));
+    }
+
+    public function annotators(Project $project): View
+    {
+        $this->authorize('manageSchema', $project);
+        return view('projects.annotators', compact('project'));
+    }
+
     public function edit(Project $project): View
     {
         $this->authorize('update', $project);

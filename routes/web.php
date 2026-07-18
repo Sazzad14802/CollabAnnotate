@@ -27,6 +27,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Projects
     Route::get('/projects/assigned', [\App\Http\Controllers\ProjectController::class, 'assigned'])->name('projects.assigned');
+    Route::get('/projects/{project}/progress', [\App\Http\Controllers\ProjectController::class, 'progress'])->name('projects.progress');
+    Route::get('/projects/{project}/rows', [\App\Http\Controllers\ProjectController::class, 'rows'])->name('projects.rows');
+    Route::get('/projects/{project}/annotators', [\App\Http\Controllers\ProjectController::class, 'annotators'])->name('projects.annotators');
     Route::resource('projects', \App\Http\Controllers\ProjectController::class);
     // Export
     Route::get('/projects/{project}/export/{format}', [App\Http\Controllers\ExportController::class, 'download'])
