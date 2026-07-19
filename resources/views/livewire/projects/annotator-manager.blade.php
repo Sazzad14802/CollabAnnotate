@@ -21,8 +21,11 @@
                                     <div class="fw-medium small text-truncate">{{ $user['name'] }}</div>
                                     <div class="text-muted small text-truncate">{{ $user['email'] }}</div>
                                 </div>
-                                <button wire:click="addAnnotator({{ $user['id'] }})"
-                                        class="btn btn-primary btn-sm flex-shrink-0">Add</button>
+                                <form action="{{ route('projects.annotators.add', $project) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="email" value="{{ $user['email'] }}">
+                                    <button type="submit" class="btn btn-primary btn-sm flex-shrink-0">Add</button>
+                                </form>
                             </li>
                         @endforeach
                     </ul>
@@ -65,9 +68,11 @@
                             </div>
                             <div class="d-flex align-items-center gap-3">
                                 <small class="text-muted">{{ number_format($annotator->annotation_count) }} annotations</small>
-                                <button wire:click="removeAnnotator({{ $annotator->id }})"
-                                        wire:confirm="Remove {{ $annotator->name }} from this project?"
-                                        class="btn btn-sm btn-outline-danger">Remove</button>
+                                <form action="{{ route('projects.annotators.remove', [$project, $annotator]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove {{ addslashes($annotator->name) }} from this project?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                </form>
                             </div>
                         </li>
                     @endforeach

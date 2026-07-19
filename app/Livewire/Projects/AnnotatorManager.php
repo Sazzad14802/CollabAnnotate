@@ -36,37 +36,7 @@ class AnnotatorManager extends Component
             ->toArray();
     }
 
-    public function addAnnotator(int $userId): void
-    {
-        $this->authorize('manageAnnotators', $this->project);
 
-        $user = User::findOrFail($userId);
-
-        // Add to project
-        $this->project->members()->attach($user->id, [
-            'role' => 'annotator',
-            'joined_at' => now(),
-        ]);
-
-        $this->searchQuery   = '';
-        $this->searchResults = [];
-        $this->dispatch('annotator-added');
-    }
-
-    public function removeAnnotator(int $userId): void
-    {
-        $this->authorize('manageAnnotators', $this->project);
-
-        $user = User::findOrFail($userId);
-
-        if ($this->project->user_id === $userId) {
-            $this->addError('remove', 'Cannot remove the project owner.');
-            return;
-        }
-
-        $this->project->members()->detach($userId);
-        $this->dispatch('annotator-removed');
-    }
 
     public function render(): View
     {

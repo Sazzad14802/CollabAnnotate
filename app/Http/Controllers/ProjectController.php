@@ -154,4 +154,38 @@ class ProjectController extends Controller
         return redirect()->route('projects.index')
             ->with('success', 'Project deleted.');
     }
+    public function addAnnotator(Request $request, Project $project): RedirectResponse
+    {
+        $this->authorize('manageAnnotators', $project);
+
+        $request->validate([
+            'email' => ['required', 'email', 'exists:users,email'],
+        ]);
+
+        $user = \App\Models\User::where('email', $request->email)->first();
+
+        if ($project->isMember($user)) {
+            return back()->withErrors(['email' => 'User is already a member of this project.']);
+        }
+
+        $project->members()->attach($user->id, [
+            'role' => 'annotator',
+            'joined_at' => now(),
+        ]);
+
+        return back()->with('success', 'Annotator added successfully.');
+    }
+
+    public function removeAnnotator(Project $project, \App\Models\User $user): RedirectResponse
+    {
+        $this->authorize('manageAnnotators', $project);
+
+        if ($project->isOwner($user)) {
+            return back()->with('error', 'Cannot remove the project owner.');
+        }
+
+        $project->members()->detach($user->id);
+
+        return back()->with('success', 'Annotator removed successfully.');
+    }
 }

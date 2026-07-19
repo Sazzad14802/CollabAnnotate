@@ -1,4 +1,20 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    @php
+        $currentProject = request()->route('project');
+        $isOwner = false;
+        $isAssigned = false;
+        
+        if ($currentProject) {
+            $p = $currentProject instanceof \App\Models\Project ? $currentProject : \App\Models\Project::find($currentProject);
+            if ($p) {
+                $isOwner = $p->user_id === auth()->id();
+                $isAssigned = !$isOwner;
+            }
+        }
+        
+        $myProjectsActive = request()->routeIs('projects.index') || request()->routeIs('projects.create') || (request()->routeIs('projects.*') && $isOwner && !request()->routeIs('projects.assigned'));
+        $assignedProjectsActive = request()->routeIs('projects.assigned') || (request()->routeIs('projects.*') && $isAssigned && !request()->routeIs('projects.index'));
+    @endphp
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -15,10 +31,10 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.index') || request()->routeIs('projects.show')" wire:navigate>
+                    <x-nav-link :href="route('projects.index')" :active="$myProjectsActive" wire:navigate>
                         My Projects
                     </x-nav-link>
-                    <x-nav-link :href="route('projects.assigned')" :active="request()->routeIs('projects.assigned')" wire:navigate>
+                    <x-nav-link :href="route('projects.assigned')" :active="$assignedProjectsActive" wire:navigate>
                         Assigned Projects
                     </x-nav-link>
                     @if(auth()->user()->isAdmin())
@@ -82,10 +98,10 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.index') || request()->routeIs('projects.show')" wire:navigate>
+            <x-responsive-nav-link :href="route('projects.index')" :active="$myProjectsActive" wire:navigate>
                 My Projects
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('projects.assigned')" :active="request()->routeIs('projects.assigned')" wire:navigate>
+            <x-responsive-nav-link :href="route('projects.assigned')" :active="$assignedProjectsActive" wire:navigate>
                 Assigned Projects
             </x-responsive-nav-link>
             @if(auth()->user()->isAdmin())

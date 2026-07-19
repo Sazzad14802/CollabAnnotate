@@ -28,13 +28,24 @@ Route::middleware(['auth'])->group(function () {
     // Projects
     Route::get('/projects/assigned', [\App\Http\Controllers\ProjectController::class, 'assigned'])->name('projects.assigned');
     Route::get('/projects/{project}/progress', [\App\Http\Controllers\ProjectController::class, 'progress'])->name('projects.progress');
-    Route::get('/projects/{project}/rows', [\App\Http\Controllers\ProjectController::class, 'rows'])->name('projects.rows');
-    Route::get('/projects/{project}/annotators', [\App\Http\Controllers\ProjectController::class, 'annotators'])->name('projects.annotators');
-    Route::resource('projects', \App\Http\Controllers\ProjectController::class);
-    // Export
-    Route::get('/projects/{project}/export/{format}', [App\Http\Controllers\ExportController::class, 'download'])
-        ->name('projects.export')
-        ->where('format', 'csv|xlsx');
+    
+    // Core project routes (viewable by owner or members, managed by policy)
+    Route::resource('projects', \App\Http\Controllers\ProjectController::class)->only(['index', 'create', 'store', 'show']);
+
+    // Owner-only routes
+    Route::middleware(['project.owner'])->group(function () {
+        Route::get('/projects/{project}/rows', [\App\Http\Controllers\ProjectController::class, 'rows'])->name('projects.rows');
+        Route::get('/projects/{project}/annotators', [\App\Http\Controllers\ProjectController::class, 'annotators'])->name('projects.annotators');
+        Route::post('/projects/{project}/annotators', [\App\Http\Controllers\ProjectController::class, 'addAnnotator'])->name('projects.annotators.add');
+        Route::delete('/projects/{project}/annotators/{user}', [\App\Http\Controllers\ProjectController::class, 'removeAnnotator'])->name('projects.annotators.remove');
+        
+        Route::resource('projects', \App\Http\Controllers\ProjectController::class)->only(['edit', 'update', 'destroy']);
+        
+        // Export
+        Route::get('/projects/{project}/export/{format}', [App\Http\Controllers\ExportController::class, 'download'])
+            ->name('projects.export')
+            ->where('format', 'csv|xlsx');
+    });
 });
 
 // Admin routes
