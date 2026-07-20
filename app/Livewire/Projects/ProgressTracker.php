@@ -24,8 +24,10 @@ class ProgressTracker extends Component
         $remaining = $total - $completed;
         $percent   = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
 
-        // Per-annotator stats
-        $annotatorStats = $this->project->annotators
+        // Combine annotators and the project owner for statistics tracking
+        $usersToTrack = $this->project->annotators->push($this->project->owner)->unique('id');
+
+        $annotatorStats = $usersToTrack
             ->map(function ($annotator) {
                 $annotated = $this->project->rowAssignments()
                     ->where('user_id', $annotator->id)
@@ -44,6 +46,8 @@ class ProgressTracker extends Component
                 return [
                     'id'            => $annotator->id,
                     'name'          => $annotator->name,
+                    'email'         => $annotator->email,
+                    'is_owner'      => $annotator->id === $this->project->user_id,
                     'annotated'     => $annotated,
                     'assigned'      => $assignedCount,
                     'percent'       => $assignedCount > 0
@@ -51,7 +55,9 @@ class ProgressTracker extends Component
                         : 0,
                     'last_activity' => $lastActivity,
                 ];
-            });
+            })
+            ->sortByDesc('annotated')
+            ->values();
 
         return view('livewire.projects.progress-tracker', compact(
             'total', 'completed', 'remaining', 'percent', 'annotatorStats'

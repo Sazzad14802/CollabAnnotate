@@ -71,14 +71,25 @@
                     </thead>
                     <tbody>
                         @foreach($annotatorStats as $stat)
-                            <tr>
+                            <tr class="{{ auth()->id() === $stat['id'] ? 'table-primary' : '' }}">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary fw-semibold"
                                              style="width:28px;height:28px;font-size:12px;">
                                             {{ substr($stat['name'], 0, 1) }}
                                         </div>
-                                        <span class="fw-medium">{{ $stat['name'] }}</span>
+                                        <div>
+                                            <span class="fw-medium">
+                                                {{ $stat['name'] }}
+                                                @if($stat['is_owner'])
+                                                    <span class="badge bg-secondary ms-1">Owner</span>
+                                                @endif
+                                                @if(auth()->id() === $stat['id'])
+                                                    <span class="badge bg-primary ms-1">You</span>
+                                                @endif
+                                            </span>
+                                            <div class="text-muted small" style="font-size:11px;">{{ $stat['email'] }}</div>
+                                        </div>
                                     </div>
                                 </td>
                                 <td>{{ number_format($stat['assigned']) }}</td>
